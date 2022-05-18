@@ -121,62 +121,6 @@ write.table(HTRX_33.04_33.08,"HTRX_33.04_33.08.txt",sep=',',row.names=FALSE)
 
 
 
-###ggplots
-#genotype, htr and painting in the same plot!
-plotcomparison <- function(SNPname,eachSNP,nsnp,nfeature){
-  data_use_plot=data.frame(Number=c(1:nfeature,1:nfeature,1:nsnp,1:nfeature),
-                           adjR2=c(HTRX_data[1:nfeature,3],
-                                   HTR_Geno[1:nfeature,3],
-                                   HTR_Geno[1:nsnp,5],
-                                   Ancestry[1:nfeature,3]),
-                           Model=c(rep('HTRX',nfeature),
-                                   rep('HTR',nfeature),
-                                   rep('Genotype',nsnp),
-                                   rep('Painting',nfeature)),
-                           name=c(HTRX_data[1:nfeature,2],
-                                  HTR_Geno[1:nfeature,2],
-                                  HTR_Geno[1:nsnp,4],
-                                  Ancestry[1:nfeature,2]))
-  ggplot(data_use_plot,aes(x=Number,y=adjR2,color=Model))+geom_point(size=4)+geom_line(size=1.5)+
-    xlab('Number of features')+
-    ylab('Cumulative adjusted R\u00B2')+ggtitle(paste('SNP',SNPname))+labs(subtitle=eachSNP)+
-    theme_stata() + scale_color_stata() +
-    geom_text_repel(aes(x=Number,y=adjR2,color=Model,label=name))+
-    theme(plot.title = element_text(hjust = 0.5, size=22),
-          axis.title.x = element_text(size=20),
-          axis.title.y = element_text(size=20),
-          legend.title = element_text(size=20),
-          legend.text = element_text(size=20),
-          axis.text.x = element_text(size=17),
-          axis.text.y = element_text(size=17),
-          plot.subtitle=element_text(size=16, hjust=0.5))
-}
-Ancestry=read.table('adjR2_30060631_31346822_eachpainting.csv',header=TRUE,sep=',')
-HTR_Geno=read.table('adjR2_30060631_31346822.csv',header=TRUE,sep=',')
-HTRX_data=read.table('HTRX_30.06_31.34.txt',header=TRUE,sep=',')
-plotcomparison(SNPname='30060631-31346822',
-               eachSNP='Including 4 SNPs: 30060631(G/C), 31322522(C/A), 31323677(C/T), 31346822(T/C)',
-               nsnp=4,nfeature=15)
 
-Ancestry=read.table('adjR2_31497244_32145399_eachpainting.csv',header=TRUE,sep=',')
-HTR_Geno=read.table('adjR2_31497244_32145399.csv',header=TRUE,sep=',')
-HTRX_data=read.table('HTRX_31.49_32.14.txt',header=TRUE,sep=',')
-plotcomparison(SNPname='31497244-32145399',
-               eachSNP='Including 5 SNPs: 31497244(A/G), 31518354(G/A), 31539767(C/T), 31540757(A/C), 32145399(C/G)',
-               nsnp=5,nfeature=20)
-
-Ancestry=read.table('adjR2_32367997_32681483_eachpainting.csv',header=TRUE,sep=',')
-HTR_Geno=read.table('adjR2_32367997_32681483.csv',header=TRUE,sep=',')
-HTRX_data=read.table('HTRX_32.36_32.68.txt',header=TRUE,sep=',')
-plotcomparison(SNPname='32367997-32681483',
-               eachSNP='Including 6 SNPs: 32367997(T/A), 32413051(A/G), 32586854(G/A), 32609173(C/G), 32634302(A/G), 32681483(T/C)',
-               nsnp=6,nfeature=20)
-
-Ancestry=read.table('adjR2_33047466_33081823_eachpainting.csv',header=TRUE,sep=',')
-HTR_Geno=read.table('adjR2_33047466_33081823.csv',header=TRUE,sep=',')
-HTRX_data=read.table('HTRX_33.04_33.08.txt',header=TRUE,sep=',')
-plotcomparison(SNPname='33047466-33081823',
-               eachSNP='Including 4 SNPs: 33047466(T/C), 33047612(G/C), 33081632(A/G), 33081823(A/G)',
-               nsnp=4,nfeature=15)
 
 
