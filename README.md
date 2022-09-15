@@ -19,4 +19,4 @@ Step 2: select the best model using 10-fold cross-validation.
 We also proposed "cumulative HTRX" to perform HTRX on longer haplotypes, i.e. haplotypes which include more than 7 SNPs.
 
 ## Examples:
-HTRX_simulation.R
+HTRX_simulation.R（#https://github.com/YaolingYang/HTRX/blob/main/HTRX_simulation.R）
