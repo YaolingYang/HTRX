@@ -1,5 +1,6 @@
 source("HTRX_functions.R")
-load('whole_data_genotype.Rdata')
+
+## This simulation compares GWAS, HTRX and HTR under a 4-SNP region
 nsnp=4
 
 ## Function for simulation
