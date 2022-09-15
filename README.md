@@ -3,7 +3,7 @@
 This is the location for the Ancestry Anomaly quantification tool that was used in Barrie et al. 2022 (in prep).
 
 ## Authors: 
-Yaoling Yang (yaoling.yang@bristol.ac.uk)
+Yaoling Yang (yaoling.yang@bristol.ac.uk)\\
 Daniel Lawson (dan.lawson@bristol.ac.uk)
 
 ## Introduction:
