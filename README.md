@@ -1,11 +1,20 @@
-HTRX is an extension to Haplotype trend regression (HTR).
+##This is the location for the Ancestry Anomaly quantification tool that was used in Barrie et al. 2022 (in prep).
 
-This method is useful to find the important haplotypes of a gene region through defining haplotypes and stepwise regression.
+##Authors: 
+Yaoling Yang (yaoling.yang@bristol.ac.uk)
+Daniel Lawson (dan.lawson@bristol.ac.uk)
 
-We use "X" to denote the SNP which we don't care about the actual genotype.
+##Introduction:
 
-For example, we have haplotype "10X1", which means the first SNP must be 1, the second SNP must be 0, we don't care the third SNP, and the fourth SNP must be 1.
+Haplotype Trend Regression with eXtra flexibility (HTRX) searches for haplotype patterns that include single SNPs and non-contiguous haplotypes.
 
-For a region with N SNPs, there are 3^N - 1 different haplotypes.
+HTRX is a template gives a value for each SNP taking values of ‘0’ or ‘1’, reflecting whether the reference allele of each SNP is present or absent, or an ‘X’ meaning either value is allowed.
 
-Finally, we use forward regression to select haplotypes which add the largest cumulative adjusted R^2 in turn
+We used a two-step procedure to select the best HTRX model. 
+Step 1: select candidate models;
+Step 2: select the best model using 10-fold cross-validation.
+
+We also proposed "cumulative HTRX" to perform HTRX on longer haplotypes, i.e. haplotypes which include more than 7 SNPs.
+
+##Examples:
+HTRX_simulation.R
