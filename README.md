@@ -16,7 +16,9 @@ We used a two-step procedure to select the best HTRX model.
 Step 1: select candidate models;    
 Step 2: select the best model using 10-fold cross-validation.
 
-We also proposed "cumulative HTRX" that enables HTRX to run on longer haplotypes, i.e. haplotypes which include more than 7 SNPs. That's because there are $3^N-1$ different haplotypes when a region contains $N$ SNPs.
+Longer haplotypes are important for discovering interactions. However, there are $3^k-1$ haplotypes in HTRX if the region contains $k$ SNPs, making it unrealistic for regions with large numbers of SNPs. To address this issue, we proposed "cumulative HTRX" that enables HTRX to run on longer haplotypes, i.e. haplotypes which include more than 7 SNPs (we recommend).
 
 ## Examples:
 [HTRX_simulation.R](https://github.com/YaolingYang/HTRX/blob/main/HTRX_simulation.R)
+
+Parallel programming is avilable by setting "runparallel=TRUE" on Linux or Mac.
