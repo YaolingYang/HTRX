@@ -2,7 +2,7 @@
 
 This is the location for the HTRX tool that was used in Barrie et al. 2022 (in prep).
 
-Author:   
+Authors:   
 Yaoling Yang (yaoling.yang@bristol.ac.uk)   
 Daniel Lawson (dan.lawson@bristol.ac.uk)
 
