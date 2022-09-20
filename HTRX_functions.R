@@ -1,4 +1,4 @@
-## Model-agnostic fnuctions for model fitting and R^2
+## Model-agnostic functions for model fitting and R^2
 themodel<- function(formula,data,usebinary,clean=TRUE,...){
   ## Model fitting
   ## The "usebinary" flag allows us to choose which model we use
