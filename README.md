@@ -23,7 +23,10 @@ Longer haplotypes are important for discovering interactions. However, there are
 #Download R package "HTRX"
 devtools::install_github("YaolingYang/HTRX")
 
-#Examples:
+## Examples:
+```
+library(HTRX)
+
 #use dataset "SNP1", "SNP2" and "data_nosnp"  
 #"SNP1" and "SNP2" are both genomes of 8 SNPs for 20,000 individuals  
 #"data_nosnp" is a simulated dataset which contains the outcome (binary), sex, age and 18 PCs  
@@ -41,3 +44,4 @@ do_cv(data_nosnp,HTRX_matrix,train_proportion=0.5,sim_times=3,featurecap=feature
 do_cumulative_htrx(data_nosnp,SNP1,SNP2,train_proportion=0.5,sim_times=2,featurecap=40,usebinary=1,randomorder=TRUE,method="stratified",criteria="BIC",runparallel=FALSE)  
 
 #Parallel programming is avilable by setting "runparallel=TRUE" on Linux or Mac.  
+```
