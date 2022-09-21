@@ -38,10 +38,12 @@ HTRX_matrix=make_htrx(SNP1[,1:4],SNP2[,1:4])
 featurecap=htrx_max(nsnp=4)  
 
 #then perform HTRX using 2-step cross-validation  
-do_cv(data_nosnp,HTRX_matrix,train_proportion=0.5,sim_times=3,featurecap=featurecap,usebinary=1,method="stratified",criteria="BIC",runparallel=FALSE)  
+do_cv(data_nosnp,HTRX_matrix,train_proportion=0.5,sim_times=3,featurecap=featurecap,
+      usebinary=1,method="stratified",criteria="BIC",runparallel=FALSE)  
 
 #we perform cumulative HTRX on all the 8 SNPs using 2-step cross-validation  
-do_cumulative_htrx(data_nosnp,SNP1,SNP2,train_proportion=0.5,sim_times=2,featurecap=40,usebinary=1,randomorder=TRUE,method="stratified",criteria="BIC",runparallel=FALSE)  
+do_cumulative_htrx(data_nosnp,SNP1,SNP2,train_proportion=0.5,sim_times=2,featurecap=40,usebinary=1,
+                   randomorder=TRUE,method="stratified",criteria="BIC",runparallel=FALSE)  
 
 #Parallel programming is avilable by setting "runparallel=TRUE" on Linux or Mac.  
 ```
