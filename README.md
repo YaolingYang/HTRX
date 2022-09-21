@@ -1,6 +1,6 @@
 # Haplotype Trend Regression with eXtra flexibility (HTRX)
 
-This is the location for the HTRX tool that was used in Barrie et al. 2022 (in prep).
+This is the location for the HTRX tool that was used in Barrie et al. 2022 (submitted).
 
 * Authors:   
 Yaoling Yang (yaoling.yang@bristol.ac.uk)   
