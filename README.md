@@ -21,7 +21,9 @@ Step 2: select the best model using 10-fold cross-validation.
 Longer haplotypes are important for discovering interactions. However, there are $3^k-1$ haplotypes in HTRX if the region contains $k$ SNPs, making it unrealistic for regions with large numbers of SNPs. To address this issue, we proposed "cumulative HTRX" that enables HTRX to run on longer haplotypes, i.e. haplotypes which include more than 7 SNPs (we recommend).
 
 ## Install R package "HTRX"
+```
 devtools::install_github("YaolingYang/HTRX")
+```
 
 ## Examples:
 ```
