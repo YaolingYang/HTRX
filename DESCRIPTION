@@ -1,0 +1,13 @@
+Package: HTRX
+Type: Package
+Title: Perform Haplotype Trend Regression with eXtra flexibility (HTRX)
+Version: 0.1.0
+Author: Yaoling Yang
+Maintainer: Yaoling Yang <yaoling.yang@bristol.ac.uk>
+Description: HTRX searches for haplotype patterns that include single SNPs and non-contiguous haplotypes that are associated with a phenotype.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.1
+Depends: R (>= 4.2.0)
+Imports: fastglm, caret, parallel, methods, stats
