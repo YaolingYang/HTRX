@@ -6,7 +6,7 @@ This is the location for the HTRX tool that was used in [Barrie, W. et al. Genet
 Yaoling Yang (yaoling.yang@bristol.ac.uk)   
 Daniel Lawson (dan.lawson@bristol.ac.uk)
 
-* License: GPL-3.0-or-later
+* License: GPL-3
 
 ## Introduction:
 
