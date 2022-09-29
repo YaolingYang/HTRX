@@ -29,23 +29,48 @@ devtools::install_github("YaolingYang/HTRX")
 ```
 library(HTRX)
 
-## use dataset "SNP1", "SNP2" and "data_nosnp"  
-## "SNP1" and "SNP2" are both genomes of 8 SNPs for 20,000 individuals  
-## "data_nosnp" is a simulated dataset which contains the outcome (binary), sex, age and 18 PCs  
-## we perform HTRX on the first 4 SNPs  
-## we first generate all the haplotype data, as defined by HTRX  
-HTRX_matrix=make_htrx(SNP1[,1:4],SNP2[,1:4])  
+## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
+## "example_hap1" and "example_hap2" are both genomes of 8 SNPs for 5,000 individuals (diploid data) 
+## "example_data_nosnp" is an example dataset which contains the outcome (binary), sex, age and 18 PCs
 
-## next compute the maximum number of independent features  
-featurecap=htrx_max(nsnp=4)  
+## visualise the covariates data
+head(HTRX::example_data_nosnp)
 
-## then perform HTRX using 2-step cross-validation  
-do_cv(data_nosnp,HTRX_matrix,train_proportion=0.5,sim_times=3,featurecap=featurecap,
-      usebinary=1,method="stratified",criteria="BIC",runparallel=FALSE)  
+## visualise the genotype data for the first genome
+head(HTRX::example_hap1)
 
-## we perform cumulative HTRX on all the 8 SNPs using 2-step cross-validation  
-do_cumulative_htrx(data_nosnp,SNP1,SNP2,train_proportion=0.5,sim_times=2,featurecap=40,usebinary=1,
-                   randomorder=TRUE,method="stratified",criteria="BIC",runparallel=FALSE)  
+## we perform HTRX on the first 4 SNPs
+## we first generate all the haplotype data, as defined by HTRX
+HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],HTRX::example_hap2[,1:4])
 
-## Parallel programming is avilable by setting "runparallel=TRUE" on Linux or Mac.  
+## If the data is haploid, please set
+## HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],HTRX::example_hap1[,1:4])
+
+## next compute the maximum number of independent features
+featurecap=htrx_max(nsnp=4)
+
+## then perform HTRX using 2-step cross-validation
+## to compute additional variance explained by haplotypes
+## If you want to compute total variance explained, please set gain=FALSE
+htrx_results <- do_cv(HTRX::example_data_nosnp,
+                      HTRX_matrix,train_proportion=0.5,
+                      sim_times=3,featurecap=featurecap,usebinary=1,
+                      method="stratified",criteria="BIC",
+                      gain=TRUE,runparallel=FALSE)
+
+## If we want to compute the total variance explained
+## we can set gain=FALSE in the above example
+
+#' ## we perform cumulative HTRX on all the 8 SNPs using 2-step cross-validation
+#' ## to compute additional variance explained by haplotypes
+#' ## If the data is haploid, please set hap2=HTRX::example_hap1
+#' ## If you want to compute total variance explained, please set gain=FALSE
+#' ## For Linux/MAC users, we strongly encourage you to set runparallel=TRUE
+cumu_htrx_results <- do_cumulative_htrx(data_nosnp=HTRX::example_data_nosnp,
+                                        hap1=HTRX::example_hap1,
+                                        hap2=HTRX::example_hap2,
+                                        train_proportion=0.5,sim_times=1,
+                                        featurecap=6,usebinary=1,
+                                        randomorder=TRUE,method="stratified",
+                                        criteria="BIC",runparallel=FALSE)
 ```
