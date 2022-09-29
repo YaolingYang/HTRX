@@ -5,13 +5,13 @@
 #' @param data a data frame contains all the variables included in the formula.
 #' The phenotype variable must be named "outcome".
 #' @param usebinary a non-negative number representing different models.
-#' Use linear model if usebinary=0, use logistic regression model via fastglm if usebinary=1,
+#' Use linear model if usebinary=0, use logistic regression model via fastglm if usebinary=1 (by default),
 #' and use logistic regression model via glm if usebinary>1.
 #' @param clean logical. If clean=TRUE (by default), remove additional storages that
 #' the "predict", "AIC", "BIC" methods do not need.
 #'
 #' @return a fitted model.
-#' @details "fasglm" is from "fastglm" package, which is much faster than "glm".
+#' @details \code{\link{fastglm}} is from \code{\link{fastglm}} package, which is much faster than \code{\link{glm}}.
 #'
 #' @rdname themodel
 #' @examples
@@ -34,16 +34,16 @@ NULL
 
 #' @rdname themodel
 #' @export
-themodel<- function(formula,data=NULL,usebinary=1,clean=TRUE,...){
+themodel<- function(formula,data,usebinary=1,clean=TRUE){
   if(usebinary==0){
-    model=lm(formula=formula,data=data,...)
+    model=lm(formula=formula,data=data)
   }else if(usebinary>1){
-    model=glm(formula=formula,data=data,family=binomial(link='logit'),...)
+    model=glm(formula=formula,data=data,family=binomial(link='logit'))
   }else if(usebinary==1){
     data=cbind("(Intercept)"=1,data)
     tout=which(colnames(data)=="outcome")
     model=fastglm::fastglm(x=as.matrix(data[,-tout]),y=data[,"outcome"],
-                           family=binomial(link='logit'),method=3,...)
+                           family=binomial(link='logit'),method=3)
   }
   if(clean){
     if(!is(model,"lm")) model$residuals=NULL;

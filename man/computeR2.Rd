@@ -10,7 +10,7 @@ mypredict(model, newdata)
 computeR2(pred, y, usebinary = 1)
 }
 \arguments{
-\item{model}{a fitted model, which is the output of "themodel" function.}
+\item{model}{a fitted model, which is the output of \code{\link{themodel}}.}
 
 \item{newdata}{a data frame which contains all the variables included in the model.
 This data frame is used to make prediction on.}
@@ -21,14 +21,15 @@ This data frame is used to make prediction on.}
 
 \item{usebinary}{a non-negative number representing different models.
 Use linear model if usebinary=0,
-use logistic regression model via fastglm if usebinary=1,
+use logistic regression model via fastglm if usebinary=1 (by default),
 and use logistic regression model via glm if usebinary>1.}
 }
 \value{
-'mypredict` returns a vector of the predicted outcome.
+\code{\link{mypredict}} returns a vector of the predicted outcome.
 
-'computeR2` returns a positive number of the variance explained by the
-linear model (conventional \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}) or the generalized linear model (McFadden's \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}).
+\code{\link{computeR2}} returns a positive number of the variance explained by the
+linear model (conventional \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}) or
+the generalized linear model (McFadden's \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}).
 }
 \description{
 Compute the variance explained by a linear or

@@ -17,17 +17,25 @@ twofold_split(
 \arguments{
 \item{index_all}{a vector of the indexes of all the individuals.}
 
-\item{strat}{a vector of the variable (usually the outcome), based on which the data is going to be stratified. This only works when method="stratified".}
+\item{strat}{a vector of the variable (usually the outcome)
+based on which the data is going to be stratified.
+This only works when method="stratified".
+By default, strat=NULL.}
 
-\item{method}{the method to be used, either "simple" (default) or "stratified".}
+\item{method}{the method to be used for data split, either "simple" (default) or "stratified".}
 
-\item{train_proportion}{a positive number between 0 and 1 giving the proportion of the training dataset when splitting data into 2 folds.}
+\item{train_proportion}{a positive number between 0 and 1 giving
+the proportion of the training dataset when splitting data into 2 folds.
+By default, train_proportion=0.5.}
 }
 \value{
 a list containing the indexes of different folds.
 }
 \description{
-Split data into ten or two folds.
+\code{\link{tenfold_split}} splits data into ten folds, which is used for cross-validation.
+\code{\link{twofold_split}} splits data into two folds, which samples the training set.
+Both stratified sampling and simple sampling are allowed.
+The details can be found in function \code{\link{do_cv}} and \code{\link{do_cumulative_htrx}}.
 }
 \details{
 Stratified sampling works only when the "strat" variable is binary (either 0 or 1),

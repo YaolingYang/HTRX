@@ -7,60 +7,71 @@
 \title{Generate haplotype data}
 \usage{
 make_htrx(
-  SNP1,
-  SNP2,
+  hap1,
+  hap2 = hap1,
   rareremove = FALSE,
   rare_threshold = 0.001,
   fixedfeature = NULL
 )
 
-make_htr(SNP1, SNP2, rareremove = FALSE, rare_threshold = 0.001)
+make_htr(hap1, hap2 = hap1, rareremove = FALSE, rare_threshold = 0.001)
 
-make_snp(SNP1, SNP2, rareremove = FALSE, rare_threshold = 0.001)
+make_snp(hap1, hap2 = hap1, rareremove = FALSE, rare_threshold = 0.001)
 }
 \arguments{
-\item{SNP1}{a data frame of the SNPs' genotype of the first genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).}
+\item{hap1}{a data frame of the SNPs' genotype of the first genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).}
 
-\item{SNP2}{a data frame of the SNPs' genotype of the second genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).}
+\item{hap2}{a data frame of the SNPs' genotype of the second genome.
+The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).
+By default, hap2=hap1 representing haploid data. If hap2 is different from hap1, the data is diploid.}
 
 \item{rareremove}{logical. Remove rare SNPs and haplotypes or not. By default, rareremove=FALSE.}
 
-\item{rare_threshold}{a numeric number below which the haplotype or SNP is removed. This only works when rareremove=TRUE.}
+\item{rare_threshold}{a numeric number below which the haplotype or SNP is removed.
+This only works when rareremove=TRUE. By default, rare_threshold=0.001.}
 
-\item{fixedfeature}{a character consisted of the names of haplotypes.}
+\item{fixedfeature}{a character consisted of the names of haplotypes.
+This parameter can be "NULL" (by default) if all the haplotypes are used as variables.}
 }
 \value{
 a data frame of the feature data (either for SNPs, HTR or HTRX).
 }
 \description{
-Generate the feature data, either the genotype data for SNPs,
-the feature data for Haplotype Trend Regression (HTR), or
-the feature data for Haplotype Trend Regression with eXtra flexibility (HTRX).
+Generate the feature data, either the genotype data for SNPs (\code{\link{make_snp}}),
+the feature data for Haplotype Trend Regression (HTR) (\code{\link{make_htr}}), or
+the feature data for Haplotype Trend Regression with eXtra flexibility (HTRX) (\code{\link{make_htrx}}).
 }
 \details{
 If there are n SNPs, there are \ifelse{html}{\out{2<sup>n</sup>}}{\eqn{2^n}} different haplotypes created by HTR,
 and \ifelse{html}{\out{3<sup>n</sup>}}{\eqn{3^n}}-1 different haplotypes created by HTRX.
+
+When the data is haploid, please use the default setting hap2=hap1.
 }
 \examples{
-## create SNP data for both genomes
-SNP1=as.data.frame(matrix(0,nrow=100,ncol=4))
-SNP2=as.data.frame(matrix(0,nrow=100,ncol=4))
-colnames(SNP1)=colnames(SNP2)=c('a','b','c','d')
+## create SNP data for both genomes (diploid data)
+hap1=as.data.frame(matrix(0,nrow=100,ncol=4))
+hap2=as.data.frame(matrix(0,nrow=100,ncol=4))
+colnames(hap1)=colnames(hap2)=c('a','b','c','d')
 p=runif(4,0.01,0.99)
 for(j in 1:4){
-  SNP1[,j]=rbinom(n,1,p[j])
-  SNP2[,j]=rbinom(n,1,p[j])
+  hap1[,j]=rbinom(100,1,p[j])
+  hap2[,j]=rbinom(100,1,p[j])
 }
 
 ## create the SNP data without removing rare SNPs
-make_snp(SNP1,SNP2)
+make_snp(hap1,hap2)
 
 ## create feature data for "HTR" removing haplotypes rarer than 0.5\%
-make_htr(SNP1,SNP2,TRUE,0.005)
+make_htr(hap1,hap2,rareremove=TRUE,0.005)
 
 ## create feature data for "HTRX" without removing haplotypes
-make_htrx(SNP1,SNP2)
+make_htrx(hap1,hap2)
 
-## create feature data for feature"01XX" and "X101" without removing haplotypes
-make_htrx(SNP1,SNP2,fixedfeature=c("01XX","X101"))
+## create feature data for feature "01XX" and "X101"
+## without removing haplotypes
+make_htrx(hap1,hap2,fixedfeature=c("01XX","X101"))
+
+## If the data is haploid instead of diploid
+## create feature data for "HTRX" without removing haplotypes
+make_htrx(hap1,hap1)
 }

@@ -5,19 +5,25 @@
 #'
 #' @param data_nosnp a data frame with outcome and fixed covariates (for example, sex, age and the first 18 PCs)
 #' and without SNPs or haplotypes.
-#' @param SNP1 a data frame of the SNPs' genotype of the first genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).
-#' @param SNP2 a data frame of the SNPs' genotype of the second genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).
-#' @param train_proportion a positive number between 0 and 1 giving the proportion of the training dataset when splitting data into 2 folds.
+#' @param hap1 a data frame of the SNPs' genotype of the first genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).
+#' @param hap2 a data frame of the SNPs' genotype of the second genome.
+#' The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).
+#' #' By default, hap2=hap1 representing haploid.
+#' @param train_proportion a positive number between 0 and 1 giving
+#' the proportion of the training dataset when splitting data into 2 folds.
+#' By default, train_proportion=0.5.
 #' @param sim_times an integer giving the number of simulations in step 1 (see details).
-#' @param featurecap a positive integer which manually sets the maximum number of independent features. By default, featurecap=40.
+#' By default, sim_times=10.
+#' @param featurecap a positive integer which manually sets the maximum number of independent features.
+#' By default, featurecap=40.
 #' @param usebinary a non-negative number representing different models.
 #' Use linear model if usebinary=0,
-#' use logistic regression model via fastglm if usebinary=1,
+#' use logistic regression model via fastglm if usebinary=1 (by default),
 #' and use logistic regression model via glm if usebinary>1.
 #' @param randomorder logical. If randomorder=TRUE (default),
 #' use random order of all the SNPs to add SNPs in cumulative HTRX.
-#' @param fixorder a vector of the rfixed order of SNPs to be added in cumulative HTRX.
-#' This only works by setting randomorder=FALSE.
+#' @param fixorder a vector of the fixed order of SNPs to be added in cumulative HTRX.
+#' This only works by setting randomorder=FALSE. Otherwise, fixorder=NULL (default).
 #' The length of "fixorder" can be smaller than the total number of SNPs,
 #' i.e. users can specify the order of some instead of all of the SNPs.
 #' @param method the method used for data splitting, either "simple" (default) or "stratified".
@@ -25,13 +31,16 @@
 #' @param gain logical. If gain=TRUE (default), report the variance explained in addition to fixed covariates;
 #' otherwise, report the total variance explained by all the variables.
 #' @param runparallel logical. Use parallel programming based on "mclapply" function or not.
-#' Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE.
-#' @param mc.cores an integer giving the number of cores used for parallel programming. By default, mc.cores=10.
+#' Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE (default).
+#' @param mc.cores an integer giving the number of cores used for parallel programming.
+#' By default, mc.cores=6.
 #' This only works when runparallel=TRUE.
 #' @param rareremove logical. Remove rare SNPs and haplotypes or not. By default, rareremove=FALSE.
-#' @param rare_threshold a numeric number below which the haplotype or SNP is removed. This only works when rareremove=TRUE.
+#' @param rare_threshold a numeric number below which the haplotype or SNP is removed.
+#' This only works when rareremove=TRUE. By default, rare_threshold=0.001.
 #' @param dataseed a vector of the seed that each simulation in step 1 (see details) uses.
 #' The length of dataseed must be the same as sim_times.
+#' By default, dataseed=1:sim_times.
 #' @param splitseed a positive integer giving the seed that a single simulation in step 1 (see details) uses.
 #' @param featuredata a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
 #' These features exclude all the data in data_nosnp, and will be selected using 2-step cross-validation.
@@ -41,8 +50,8 @@
 #' @details Longer haplotypes are important for discovering interactions.
 #' However, there are \ifelse{html}{\out{3<sup>k</sup>}}{\eqn{3^k}}-1 haplotypes in HTRX
 #' if the region contains k SNPs,
-#' making HTRX (do_cv" function) unrealistic to apply on for regions with large numbers of SNPs.
-#' To address this issue, we proposed "cumulative HTRX" (function "do_cumulative_htrx")
+#' making HTRX (\code{\link{do_cv}}) unrealistic to apply on for regions with large numbers of SNPs.
+#' To address this issue, we proposed "cumulative HTRX" (\code{\link{do_cumulative_htrx}})
 #' that enables HTRX to run on longer haplotypes,
 #'  i.e. haplotypes which include at least 7 SNPs (we recommend).
 #'  There are 2 steps to implement cumulative HTRX.
@@ -83,51 +92,67 @@
 #' Finally, select the candidate model with the biggest
 #' average out-of-sample R2 as the best model.
 #'
-#' Function "do_cumulative_htrx_step1" is the Step 1 (1)-(3) described above.
-#' Function "extend_haps" is used to select haplotypes in the Step 1 (2) described above.
-#' Function "make_cumulative_htrx" is used to generate the haplotype data
+#' Function \code{\link{do_cumulative_htrx_step1}} is the Step 1 (1)-(3) described above.
+#' Function \code{\link{extend_haps}} is used to select haplotypes in the Step 1 (2) described above.
+#' Function \code{\link{make_cumulative_htrx}} is used to generate the haplotype data
 #' (by adding a new SNP into the haplotypes) from M haplotypes to 3M+2 haplotypes,
 #' which is also described in the Step 1 (2)-(3).
 #'
-#' @return "do_cumulative_htrx" returns a list containing the best model selected,
+#' @return \code{\link{do_cumulative_htrx}} returns a list containing the best model selected,
 #'  and the out-of-sample variance explained in each test set.
 #'
-#' "do_cv_step1" returns a list of three candidate models selected by a single simulation.
+#' \code{\link{do_cv_step1}} returns a list of three candidate models selected by a single simulation.
 #'
-#' "extend_haps" returns a character of the names of the selected features.
+#' \code{\link{extend_haps}} returns a character of the names of the selected features.
 #'
-#' "make_cumulative_htrx" returns a data frame of the haplotype matrix.
+#' \code{\link{make_cumulative_htrx}} returns a data frame of the haplotype matrix.
 #'
-#' @references Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
+#' @references Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+#'
+#' Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
 #'
 #' Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
-#'
 #' @examples
-#' ## use dataset "SNP1", "SNP2" and "data_nosnp"
-#' ## "SNP1" and "SNP2" are both genomes of 8 SNPs for 20,000 individuals
-#' ## "data_nosnp" is a simulated dataset which contains the outcome (binary), sex, age and 18 PCs
+#' ## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
+#' ## "example_hap1" and "example_hap2" are
+#' ## both genomes of 8 SNPs for 5,000 individuals (diploid data)
+#' ## "example_data_nosnp" is a simulated dataset
+#' ## which contains the outcome (binary), sex, age and 18 PCs
+#'
+#' ## visualise the covariates data
+#' head(HTRX::example_data_nosnp)
+#'
+#' ## visualise the genotype data for the first genome
+#' head(HTRX::example_hap1)
 #'
 #' ## we perform cumulative HTRX on all the 8 SNPs using 2-step cross-validation
-#' do_cumulative_htrx(data_nosnp,SNP1,SNP2,train_proportion=0.5,
-#'                    sim_times=2,featurecap=40,usebinary=1,randomorder=TRUE,
-#'                    method="stratified",criteria="BIC",
-#'                    runparallel=FALSE)
+#' ## to compute additional variance explained by haplotypes
+#' ## If the data is haploid, please set hap2=HTRX::example_hap1
+#' ## If you want to compute total variance explained, please set gain=FALSE
+#' ## For Linux/MAC users, we recommend setting runparallel=TRUE
+#' cumu_htrx_results <- do_cumulative_htrx(data_nosnp=HTRX::example_data_nosnp,
+#'                                         hap1=HTRX::example_hap1,
+#'                                         hap2=HTRX::example_hap2,
+#'                                         train_proportion=0.5,sim_times=1,
+#'                                         featurecap=6,usebinary=1,
+#'                                         randomorder=TRUE,method="stratified",
+#'                                         criteria="BIC",runparallel=FALSE)
 NULL
 
 #' @rdname do_cumulative_htrx
 #' @export
-do_cumulative_htrx <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
+do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
                                sim_times=10,
                                featurecap=40,usebinary=1,randomorder=TRUE,fixorder=NULL,
                                method="simple",criteria="BIC",gain=TRUE,
-                               runparallel=FALSE,mc.cores=10,rareremove=FALSE,rare_threshold=0.001,
+                               runparallel=FALSE,mc.cores=6,rareremove=FALSE,rare_threshold=0.001,
                                dataseed=1:sim_times){
 
   n_total=nrow(data_nosnp)
 
   #store all the candidate models from each simulation
   candidate_models=lapply(dataseed,function(s){
-    results=do_cumulative_htrx_step1(data_nosnp,SNP1,SNP2,train_proportion,
+    results=do_cumulative_htrx_step1(data_nosnp,hap1,hap2,train_proportion,
                                      featurecap=featurecap,usebinary=usebinary,
                                      fixorder=fixorder,
                                      method=method,criteria=criteria,splitseed=s,
@@ -174,9 +199,10 @@ do_cumulative_htrx <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
   R2_10fold_average=vector()
 
   for(i in 1:nrow(candidate_pool)){
+    cat('Candidate model',i,'has feature',unlist(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),'\n')
     if(runparallel){
       R2_test_gain=parallel::mclapply(1:10,function(s){
-        featuredata=make_htrx(SNP1,SNP2,rareremove=rareremove,rare_threshold=rare_threshold,
+        featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
                               fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
                             features=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),
@@ -184,7 +210,7 @@ do_cumulative_htrx <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
       },mc.cores=mc.cores)
     }else{
       R2_test_gain=lapply(1:10,function(s){
-        featuredata=make_htrx(SNP1,SNP2,rareremove=rareremove,rare_threshold=rare_threshold,
+        featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
                               fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
                             features=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),
@@ -193,7 +219,11 @@ do_cumulative_htrx <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
     }
     R2_10fold[,i]=unlist(R2_test_gain)
     R2_10fold_average[i]=mean(R2_10fold[,i])
-    cat('Average gain for candidate model',i,'is',R2_10fold_average[i],'\n')
+    if(gain){
+      cat('Average gain for candidate model',i,'is',R2_10fold_average[i],'\n')
+    }else{
+      cat('Average total variance explained by candidate model',i,'is',R2_10fold_average[i],'\n')
+    }
   }
   #select the best model based on the largest out-of-sample R^2 from 10-fold cv
   best_candidate_index=which.max(R2_10fold_average)
@@ -207,14 +237,14 @@ do_cumulative_htrx <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
 
 #' @rdname do_cumulative_htrx
 #' @export
-do_cumulative_htrx_step1 <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
+do_cumulative_htrx_step1 <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
                                      featurecap=40,usebinary=1,randomorder=TRUE,fixorder=NULL,
                                      method="simple",criteria="BIC",
                                      splitseed=123,gain=TRUE,runparallel=FALSE,
-                                     mc.cores=10,rareremove=FALSE,rare_threshold=0.001){
+                                     mc.cores=6,rareremove=FALSE,rare_threshold=0.001){
   set.seed(splitseed)
-  n_total=nrow(SNP1)
-  nsnp=ncol(SNP1)
+  n_total=nrow(hap1)
+  nsnp=ncol(hap1)
 
   #random order of SNPs added into cumulative HTRX process
   if(randomorder){
@@ -230,8 +260,8 @@ do_cumulative_htrx_step1 <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
       }
     }
   }
-  SNP1=SNP1[,snp_random]
-  SNP2=SNP2[,snp_random]
+  hap1=hap1[,snp_random]
+  hap2=hap2[,snp_random]
 
   if(method=="simple"){
     split=twofold_split(1:n_total,train_proportion)
@@ -245,19 +275,19 @@ do_cumulative_htrx_step1 <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
   for(k in 6:nsnp){
     ###select haplotypes based on cumulative R^2 on the training set
     if(k==6){
-      htrx=make_htrx(SNP1[,1:k],SNP2[,1:k],rareremove=rareremove,rare_threshold=rare_threshold)
+      htrx=make_htrx(hap1[,1:k],hap2[,1:k],rareremove=rareremove,rare_threshold=rare_threshold)
       featurename=extend_haps(data_nosnp,htrx,split$train,
                               featurecap,usebinary,gain=gain,runparallel=runparallel,mc.cores=mc.cores)
 
     }else{
       ###begin adding SNPs
       if(k<nsnp){
-        htrx=make_cumulative_htrx(SNP1[,1:k],SNP2[,1:k],featurename,
+        htrx=make_cumulative_htrx(hap1[,1:k],hap2[,1:k],featurename,
                                   rareremove=rareremove,rare_threshold=rare_threshold)
         featurename=extend_haps(data_nosnp,htrx,split$train,
                                 featurecap,usebinary,gain=gain,runparallel=runparallel,mc.cores=mc.cores)
       }else{
-        htrx=make_cumulative_htrx(SNP1[,1:k],SNP2[,1:k],featurename,
+        htrx=make_cumulative_htrx(hap1[,1:k],hap2[,1:k],featurename,
                                   rareremove=rareremove,rare_threshold=rare_threshold)
         if(randomorder){
           #return to the correct sequence of haplotype names
@@ -285,7 +315,7 @@ do_cumulative_htrx_step1 <- function(data_nosnp,SNP1,SNP2,train_proportion=0.5,
 extend_haps <- function(data_nosnp,featuredata,
                         train,
                         featurecap=dim(featuredata)[2],usebinary=1,gain=TRUE,
-                        runparallel=FALSE,mc.cores=10) {
+                        runparallel=FALSE,mc.cores=6) {
   ## Perform training
   ## For a variable called "outcome" in "data_nosnp"
   ## appending and sequentially searching one feature at a time in "featuredata"
@@ -319,13 +349,13 @@ extend_haps <- function(data_nosnp,featuredata,
   for(i in 1:featurecap){
     cat('Adding Feature Number',i,'\n')
     cal <- function(j){
-      data_try=cbind(data_use[train,],featuredata[train,j,drop=FALSE])
+      data_try=cbind(data_use[train,,drop=FALSE],featuredata[train,j,drop=FALSE])
       model_try=themodel(outcome~.,data_try,usebinary)
       R2_try_gain = computeR2(mypredict(model_try,
                                         newdata=data_try),
                               data_nosnp[train,"outcome"],usebinary) - R2_nosnp_train
-      if(gain)cat('... trying feature',j,'with gain',R2_try_gain,'\n')
-      else cat('... trying feature',j,'with score',R2_try_gain,'\n')
+      if(gain)cat('... trying feature',j,colnames(featuredata)[j],'with gain',R2_try_gain,'\n')
+      else cat('... trying feature',j,colnames(featuredata)[j],'with total variance explained',R2_try_gain,'\n')
       return(R2_try_gain)
     }
     if(runparallel==TRUE){
@@ -339,7 +369,7 @@ extend_haps <- function(data_nosnp,featuredata,
     maxnumber=which.max(unlist(R2))
     maxseq[i]=featurelist[maxnumber]
 
-    cat('... Using feature',maxseq[i],'\n')
+    cat('... Using feature',maxseq[i],colnames(featuredata)[maxseq[i]],'\n')
     data_use=cbind(data_use,featuredata[,maxseq[i],drop=FALSE])
     featurename[i]=colnames(featuredata)[maxseq[i]]
     colnames(data_use)[ncol(data_use)]=featurename[i]
@@ -352,11 +382,11 @@ extend_haps <- function(data_nosnp,featuredata,
 
 #' @rdname do_cumulative_htrx
 #' @export
-make_cumulative_htrx <- function(SNP1,SNP2,featurename,rareremove=FALSE,rare_threshold=0.001){
+make_cumulative_htrx <- function(hap1,hap2=hap1,featurename,rareremove=FALSE,rare_threshold=0.001){
   ## make a HTRX feature matrix for all the N-SNP haplotype
   ## with given featurename of N-1-SNP haplotype for cumulative HTRX
-  n=n_total=dim(SNP1)[1]
-  nsnp=dim(SNP1)[2]
+  n=n_total=dim(hap1)[1]
+  nsnp=dim(hap1)[2]
   exist_haps <- length(featurename)
   combinations=as.data.frame(matrix(NA,nrow=(3*exist_haps+2),ncol=nsnp))
   for(i in 1:exist_haps){
@@ -379,14 +409,14 @@ make_cumulative_htrx <- function(SNP1,SNP2,featurename,rareremove=FALSE,rare_thr
                   lapply(1:nsnp,function(x)
                   {
                     if(combinations[i,x]=='X')return(1:n);
-                    if(combinations[i,x]!='X')return(which(SNP1[,x]==as.numeric(combinations[i,x])));
+                    if(combinations[i,x]!='X')return(which(hap1[,x]==as.numeric(combinations[i,x])));
                   })
     )
     index2=Reduce(intersect,
                   lapply(1:nsnp,function(x)
                   {
                     if(combinations[i,x]=='X')return(1:n);
-                    if(combinations[i,x]!='X')return(which(SNP2[,x]==as.numeric(combinations[i,x])));
+                    if(combinations[i,x]!='X')return(which(hap2[,x]==as.numeric(combinations[i,x])));
                   })
     )
     HTRX_matrix[index1,i]=0.5

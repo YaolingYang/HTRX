@@ -7,29 +7,37 @@
 #' and without SNPs or haplotypes.
 #' @param featuredata a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
 #' These features exclude all the data in data_nosnp, and will be selected using 2-step cross-validation.
-#' @param train_proportion a positive number between 0 and 1 giving the proportion of the training dataset when splitting data into 2 folds.
+#' @param train_proportion a positive number between 0 and 1 giving
+#' the proportion of the training dataset when splitting data into 2 folds.
+#' By default, train_proportion=0.5.
 #' @param sim_times an integer giving the number of simulations in step 1 (see details).
-#' @param featurecap a positive integer which manually sets the maximum number of independent features. By default, featurecap=40.
+#' By default, sim_times=20.
+#' @param featurecap a positive integer which manually sets the maximum number of independent features.
+#' By default, featurecap=40.
 #' @param usebinary a non-negative number representing different models.
 #' Use linear model if usebinary=0,
-#' use logistic regression model via fastglm if usebinary=1,
+#' use logistic regression model via fastglm if usebinary=1 (by default),
 #' and use logistic regression model via glm if usebinary>1.
 #' @param method the method used for data splitting, either "simple" (default) or "stratified".
 #' @param criteria the information criteria for model selection, either "BIC" (default) or "AIC".
 #' @param gain logical. If gain=TRUE (default), report the variance explained in addition to fixed covariates;
 #' otherwise, report the total variance explained by all the variables.
 #' @param runparallel logical. Use parallel programming based on "mclapply" function or not.
-#' Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE.
-#' @param mc.cores an integer giving the number of cores used for parallel programming. By default, mc.cores=10.
+#' Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE (default).
+#' @param mc.cores an integer giving the number of cores used for parallel programming.
+#' By default, mc.cores=6.
 #' This only works when runparallel=TRUE.
-#' @param seed a positive integer giving the seed of data split.
+#' @param splitseed a positive integer giving the seed of data split.
 #' @param train a vector of the indexes of the training data.
 #' @param test a vector of the indexes of the test data.
 #' @param features a character of the fixed features.
 #' @param coefficients a vector giving the coefficients of the fixed features.
-#' @param R2only logical. If R2only=TRUE, function infer_fixedfeatures only returns the variance explained in the test data.
+#' If the fixed features don't have fixed coefficients, set coefficients=NULL (default).
+#' @param R2only logical. If R2only=TRUE, function infer_fixedfeatures only
+#' returns the variance explained in the test data.
+#' By default, R2only=FALSE.
 #'
-#' @details Function "do_cv" is the main function used for selecting haplotypes from HTRX or SNPs.
+#' @details Function \code{\link{do_cv}} is the main function used for selecting haplotypes from HTRX or SNPs.
 #' It is a two-step issued and is used for alleviate overfitting.
 #'
 #' Step 1: select candidate models. This is to address the model search problem,
@@ -64,40 +72,60 @@
 #' Finally, select the candidate model with the biggest
 #' average out-of-sample R2 as the best model.
 #'
-#' Function "do_cv_step1" is the Step 1 (1)-(2) described above.
-#' Function "infer_step1" is the Step 1 (2) described above.
-#' Function "infer_fixedfeatures" is used to fit all the candidate models on the training dataset,
+#' Function \code{\link{do_cv_step1}} is the Step 1 (1)-(2) described above.
+#' Function \code{\link{infer_step1}} is the Step 1 (2) described above.
+#' Function \code{\link{infer_fixedfeatures}} is used to fit all the candidate models on the training dataset,
 #' and compute the additional variance explained by features (out-of-sample R2) in the test dataset,
 #' as described in the Step 2 (2) bove.
 #'
-#' @return "do_cv" returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
+#' @return \code{\link{do_cv}} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
 #'
-#' "do_cv_step1" and "infer_step1" return a list of three candidate models selected by a single simulation.
+#' \code{\link{do_cv_step1}} and \code{\link{infer_step1}} return a list of three candidate models selected by a single simulation.
 #'
-#' "infer_fixedfeatures" returns a list of the variance explained in the test set if R2only=TRUE,
+#' \code{\link{infer_fixedfeatures}} returns a list of the variance explained in the test set if R2only=TRUE,
 #' otherwise, it returns a list of the variance explained in the test set, the model including all the variables,
 #' and the null model, i.e. the model with outcome and fixed covariates only.
 #'
-#' @references Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
+#' @references Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+#'
+#' Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
 #'
 #' Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
 #'
 #' @examples
-#' ## use dataset "SNP1", "SNP2" and "data_nosnp"
-#' ## "SNP1" and "SNP2" are both genomes of 8 SNPs for 20,000 individuals
-#' ## "data_nosnp" is a simulated dataset which contains the outcome (binary), sex, age and 18 PCs
+#' ## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
+#' ## "example_hap1" and "example_hap2" are
+#' ## both genomes of 8 SNPs for 5,000 individuals (diploid data)
+#' ## "example_data_nosnp" is an example dataset
+#' ## which contains the outcome (binary), sex, age and 18 PCs
+#'
+#' ## visualise the covariates data
+#' head(HTRX::example_data_nosnp)
+#'
+#' ## visualise the genotype data for the first genome
+#' head(HTRX::example_hap1)
+#'
 #' ## we perform HTRX on the first 4 SNPs
 #' ## we first generate all the haplotype data, as defined by HTRX
-#' HTRX_matrix=make_htrx(SNP1[,1:4],SNP2[,1:4])
+#' HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],HTRX::example_hap2[,1:4])
+#'
+#' ## If the data is haploid, please set
+#' ## HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],HTRX::example_hap1[,1:4])
 #'
 #' ## next compute the maximum number of independent features
 #' featurecap=htrx_max(nsnp=4)
 #'
 #' ## then perform HTRX using 2-step cross-validation
-#' do_cv(data_nosnp,HTRX_matrix,train_proportion=0.5,
-#'       sim_times=3,featurecap=featurecap,usebinary=1,
-#'       method="stratified",criteria="BIC",
-#'       runparallel=FALSE)
+#' ## to compute additional variance explained by haplotypes
+#' ## If you want to compute total variance explained, please set gain=FALSE
+#' htrx_results <- do_cv(HTRX::example_data_nosnp,
+#'                       HTRX_matrix,train_proportion=0.5,
+#'                       sim_times=3,featurecap=featurecap,usebinary=1,
+#'                       method="stratified",criteria="BIC",
+#'                       gain=TRUE,runparallel=FALSE)
+#'
+#' ## If we want to compute the total variance explained
+#' ## we can set gain=FALSE in the above example
 NULL
 
 #' @rdname do_cv
@@ -106,12 +134,12 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
                   sim_times=20,
                   featurecap=dim(featuredata)[2],usebinary=1,
                   method="simple",criteria="BIC",gain=TRUE,
-                  runparallel=FALSE,mc.cores=10){
+                  runparallel=FALSE,mc.cores=6){
   #First step: obtain all the candidate models from running "sim_times" times simulation
   candidate_models=lapply(1:sim_times,function(s){
     results=do_cv_step1(data_nosnp,featuredata,train_proportion,
                         featurecap=featurecap,usebinary=usebinary,
-                        method=method,criteria=criteria,seed=s,
+                        method=method,criteria=criteria,splitseed=s,
                         runparallel=runparallel,mc.cores=mc.cores)
   })
 
@@ -158,6 +186,7 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
   R2_10fold_average=vector()
 
   for(i in 1:nrow(candidate_pool)){
+    cat('Candidate model',i,'has feature',unlist(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),'\n')
     if(runparallel){
       R2_test_gain=parallel::mclapply(1:10,function(s){
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
@@ -173,7 +202,12 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
     }
     R2_10fold[,i]=unlist(R2_test_gain)
     R2_10fold_average[i]=mean(R2_10fold[,i])
-    cat('Average gain for candidate model',i,'is',R2_10fold_average[i],'\n')
+    if(gain){
+      cat('Average gain for candidate model',i,'is',R2_10fold_average[i],'\n')
+    }else{
+      cat('Average total variance explained by candidate model',i,'is',R2_10fold_average[i],'\n')
+    }
+
   }
 
   #select the best model based on the largest out-of-sample R^2 from 10-fold cv
@@ -191,12 +225,12 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
 do_cv_step1 <- function(data_nosnp,featuredata,train_proportion=0.5,
                         featurecap=dim(featuredata)[2],usebinary=1,
                         method="simple",criteria="BIC",
-                        seed=123,runparallel=FALSE,mc.cores=10){
+                        splitseed=123,runparallel=FALSE,mc.cores=6){
   #The first step for HTRX
   #split the dataset at first
   #Then pass all the required data/parameters to "infer_step1" function to select candidate models
 
-  set.seed(seed)
+  set.seed(splitseed)
   n_total=nrow(data_nosnp)
   if(method=="simple"){
     split=twofold_split(1:n_total,train_proportion)
@@ -217,7 +251,7 @@ do_cv_step1 <- function(data_nosnp,featuredata,train_proportion=0.5,
 infer_step1 <- function(data_nosnp,featuredata,
                         train,criteria="BIC",
                         featurecap=dim(featuredata)[2],usebinary=1,
-                        runparallel=FALSE, mc.cores=10) {
+                        runparallel=FALSE, mc.cores=6) {
   ## It's Step 1: select candidate models
   ## For a variable called "outcome" in "data_nosnp"
   ## appending and sequentially searching one feature at a time in "featuredata"
@@ -242,14 +276,14 @@ infer_step1 <- function(data_nosnp,featuredata,
   for(i in 1:featurecap){
     cat('Adding Feature Number',i,'\n')
     cal <- function(j){
-      data_try=cbind(data_use[train,],featuredata[train,j,drop=FALSE])
+      data_try=cbind(data_use[train,,drop=FALSE],featuredata[train,j,drop=FALSE])
       model_try=themodel(outcome~.,data_try,usebinary)
       if(criteria=="AIC"){
         information_try_gain = AIC(model_try)
-        cat('... trying feature',j,'with AIC',information_try_gain,'\n')
+        cat('... trying feature',j,colnames(featuredata)[j],'with AIC',information_try_gain,'\n')
       }else{
         information_try_gain = AIC(model_try,k=log(nrow(data_try)))
-        cat('... trying feature',j,'with BIC',information_try_gain,'\n')
+        cat('... trying feature',j,colnames(featuredata)[j],'with BIC',information_try_gain,'\n')
       }
       return(information_try_gain)
     }
@@ -266,12 +300,12 @@ infer_step1 <- function(data_nosnp,featuredata,
     minseq[i]=featurelist[minnumber]
 
     data_use=cbind(data_use,featuredata[,minseq[i],drop=FALSE])
-    modellist[[i]]=themodel(outcome~.,data_use[train,],usebinary)
+    modellist[[i]]=themodel(outcome~.,data_use[train,,drop=FALSE],usebinary)
     featurename[i]=colnames(featuredata)[minseq[i]]
     colnames(data_use)[ncol(data_use)]=featurename[i]
     featurelist=featurelist[-minnumber]
 
-    cat('... Using feature',minseq[i],'\n')
+    cat('... Using feature',minseq[i],colnames(featuredata)[minseq[i]],'\n')
 
     #keep three different models to increase the models in the candidate model pool
     if(i>=3){
@@ -314,22 +348,24 @@ infer_fixedfeatures <- function(data_nosnp,featuredata,train=(1:nrow(data_nosnp)
   ## Make a model with a specified set of features from the training data
   ## Reporting the results on the test data
   ## Optionally setting coefficients
-  data_use=cbind(data_nosnp,featuredata[,features])
-  model_use=themodel(outcome~.,data_use[train,],usebinary)
-  if(gain) model_nosnp=themodel(outcome~.,data_nosnp[train,],usebinary)
+  data_use=cbind(data_nosnp,featuredata[,features,drop=FALSE])
+  model_use=themodel(outcome~.,data_use[train,,drop=FALSE],usebinary)
+  if(gain) model_nosnp=themodel(outcome~.,data_nosnp[train,,drop=FALSE],usebinary)
   if(!all(is.null(coefficients))){
     model_use$coefficients[]=coefficients[names(model_use$coefficients)]
   }
   R2_use_gain = computeR2(mypredict(model_use,
-                                    newdata=data_use[test,]),
+                                    newdata=data_use[test,,drop=FALSE]),
                           data_nosnp[test,"outcome"],usebinary)
   if(gain) {
     R2_nosnp_test= computeR2(mypredict(model_nosnp,
-                                       newdata=data_nosnp[test,]),
+                                       newdata=data_nosnp[test,,drop=FALSE]),
                              data_nosnp[test,"outcome"],usebinary)
     R2_use_gain=R2_use_gain - R2_nosnp_test
+    cat('Relative gain = ',R2_use_gain,'\n')
+  }else{
+    cat('Total variance explained = ',R2_use_gain,'\n')
   }
-  cat('Relative gain = ',R2_use_gain,'\n')
   if(R2only){
     list(R2=R2_use_gain)
   }else{

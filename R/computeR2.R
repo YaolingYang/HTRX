@@ -2,23 +2,24 @@
 #' @description Compute the variance explained by a linear or
 #' generalized linear model.
 #' @name computeR2
-#' @param model a fitted model, which is the output of "themodel" function.
+#' @param model a fitted model, which is the output of \code{\link{themodel}}.
 #' @param newdata a data frame which contains all the variables included in the model.
 #' This data frame is used to make prediction on.
 #' @param pred a vector of the predicted outcome.
 #' @param y a vector of the actual outcome.
 #' @param usebinary a non-negative number representing different models.
 #' Use linear model if usebinary=0,
-#' use logistic regression model via fastglm if usebinary=1,
+#' use logistic regression model via fastglm if usebinary=1 (by default),
 #' and use logistic regression model via glm if usebinary>1.
 #'
 #' @details The variance explained by a linear model is based on the conventional \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}.
 #' As for logistic regression, we use McFadden's \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}.
 #'
-#' @return 'mypredict` returns a vector of the predicted outcome.
+#' @return \code{\link{mypredict}} returns a vector of the predicted outcome.
 #'
-#' 'computeR2` returns a positive number of the variance explained by the
-#' linear model (conventional \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}) or the generalized linear model (McFadden's \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}).
+#' \code{\link{computeR2}} returns a positive number of the variance explained by the
+#' linear model (conventional \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}) or
+#' the generalized linear model (McFadden's \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}).
 #'
 #' @references McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
 #' @examples

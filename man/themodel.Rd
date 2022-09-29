@@ -4,7 +4,7 @@
 \alias{themodel}
 \title{Model fitting}
 \usage{
-themodel(formula, data = NULL, usebinary = 1, clean = TRUE, ...)
+themodel(formula, data, usebinary = 1, clean = TRUE)
 }
 \arguments{
 \item{formula}{a formula for model-fitting.}
@@ -13,7 +13,7 @@ themodel(formula, data = NULL, usebinary = 1, clean = TRUE, ...)
 The phenotype variable must be named "outcome".}
 
 \item{usebinary}{a non-negative number representing different models.
-Use linear model if usebinary=0, use logistic regression model via fastglm if usebinary=1,
+Use linear model if usebinary=0, use logistic regression model via fastglm if usebinary=1 (by default),
 and use logistic regression model via glm if usebinary>1.}
 
 \item{clean}{logical. If clean=TRUE (by default), remove additional storages that
@@ -26,7 +26,7 @@ a fitted model.
 Model-agnostic functions for model fitting (both linear and generalized linear models).
 }
 \details{
-"fasglm" is from "fastglm" package, which is much faster than "glm".
+\code{\link{fastglm}} is from \code{\link{fastglm}} package, which is much faster than \code{\link{glm}}.
 }
 \examples{
 ## create the dataset for variables and outcome

@@ -9,8 +9,8 @@
 \usage{
 do_cumulative_htrx(
   data_nosnp,
-  SNP1,
-  SNP2,
+  hap1,
+  hap2 = hap1,
   train_proportion = 0.5,
   sim_times = 10,
   featurecap = 40,
@@ -21,7 +21,7 @@ do_cumulative_htrx(
   criteria = "BIC",
   gain = TRUE,
   runparallel = FALSE,
-  mc.cores = 10,
+  mc.cores = 6,
   rareremove = FALSE,
   rare_threshold = 0.001,
   dataseed = 1:sim_times
@@ -29,8 +29,8 @@ do_cumulative_htrx(
 
 do_cumulative_htrx_step1(
   data_nosnp,
-  SNP1,
-  SNP2,
+  hap1,
+  hap2 = hap1,
   train_proportion = 0.5,
   featurecap = 40,
   usebinary = 1,
@@ -41,7 +41,7 @@ do_cumulative_htrx_step1(
   splitseed = 123,
   gain = TRUE,
   runparallel = FALSE,
-  mc.cores = 10,
+  mc.cores = 6,
   rareremove = FALSE,
   rare_threshold = 0.001
 )
@@ -54,12 +54,12 @@ extend_haps(
   usebinary = 1,
   gain = TRUE,
   runparallel = FALSE,
-  mc.cores = 10
+  mc.cores = 6
 )
 
 make_cumulative_htrx(
-  SNP1,
-  SNP2,
+  hap1,
+  hap2 = hap1,
   featurename,
   rareremove = FALSE,
   rare_threshold = 0.001
@@ -69,26 +69,32 @@ make_cumulative_htrx(
 \item{data_nosnp}{a data frame with outcome and fixed covariates (for example, sex, age and the first 18 PCs)
 and without SNPs or haplotypes.}
 
-\item{SNP1}{a data frame of the SNPs' genotype of the first genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).}
+\item{hap1}{a data frame of the SNPs' genotype of the first genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).}
 
-\item{SNP2}{a data frame of the SNPs' genotype of the second genome. The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).}
+\item{hap2}{a data frame of the SNPs' genotype of the second genome.
+The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).
+#' By default, hap2=hap1 representing haploid.}
 
-\item{train_proportion}{a positive number between 0 and 1 giving the proportion of the training dataset when splitting data into 2 folds.}
+\item{train_proportion}{a positive number between 0 and 1 giving
+the proportion of the training dataset when splitting data into 2 folds.
+By default, train_proportion=0.5.}
 
-\item{sim_times}{an integer giving the number of simulations in step 1 (see details).}
+\item{sim_times}{an integer giving the number of simulations in step 1 (see details).
+By default, sim_times=10.}
 
-\item{featurecap}{a positive integer which manually sets the maximum number of independent features. By default, featurecap=40.}
+\item{featurecap}{a positive integer which manually sets the maximum number of independent features.
+By default, featurecap=40.}
 
 \item{usebinary}{a non-negative number representing different models.
 Use linear model if usebinary=0,
-use logistic regression model via fastglm if usebinary=1,
+use logistic regression model via fastglm if usebinary=1 (by default),
 and use logistic regression model via glm if usebinary>1.}
 
 \item{randomorder}{logical. If randomorder=TRUE (default),
 use random order of all the SNPs to add SNPs in cumulative HTRX.}
 
-\item{fixorder}{a vector of the rfixed order of SNPs to be added in cumulative HTRX.
-This only works by setting randomorder=FALSE.
+\item{fixorder}{a vector of the fixed order of SNPs to be added in cumulative HTRX.
+This only works by setting randomorder=FALSE. Otherwise, fixorder=NULL (default).
 The length of "fixorder" can be smaller than the total number of SNPs,
 i.e. users can specify the order of some instead of all of the SNPs.}
 
@@ -100,17 +106,20 @@ i.e. users can specify the order of some instead of all of the SNPs.}
 otherwise, report the total variance explained by all the variables.}
 
 \item{runparallel}{logical. Use parallel programming based on "mclapply" function or not.
-Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE.}
+Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE (default).}
 
-\item{mc.cores}{an integer giving the number of cores used for parallel programming. By default, mc.cores=10.
+\item{mc.cores}{an integer giving the number of cores used for parallel programming.
+By default, mc.cores=6.
 This only works when runparallel=TRUE.}
 
 \item{rareremove}{logical. Remove rare SNPs and haplotypes or not. By default, rareremove=FALSE.}
 
-\item{rare_threshold}{a numeric number below which the haplotype or SNP is removed. This only works when rareremove=TRUE.}
+\item{rare_threshold}{a numeric number below which the haplotype or SNP is removed.
+This only works when rareremove=TRUE. By default, rare_threshold=0.001.}
 
 \item{dataseed}{a vector of the seed that each simulation in step 1 (see details) uses.
-The length of dataseed must be the same as sim_times.}
+The length of dataseed must be the same as sim_times.
+By default, dataseed=1:sim_times.}
 
 \item{splitseed}{a positive integer giving the seed that a single simulation in step 1 (see details) uses.}
 
@@ -122,14 +131,14 @@ These features exclude all the data in data_nosnp, and will be selected using 2-
 \item{featurename}{a character giving the names of features (haplotypes).}
 }
 \value{
-"do_cumulative_htrx" returns a list containing the best model selected,
+\code{\link{do_cumulative_htrx}} returns a list containing the best model selected,
  and the out-of-sample variance explained in each test set.
 
-"do_cv_step1" returns a list of three candidate models selected by a single simulation.
+\code{\link{do_cv_step1}} returns a list of three candidate models selected by a single simulation.
 
-"extend_haps" returns a character of the names of the selected features.
+\code{\link{extend_haps}} returns a character of the names of the selected features.
 
-"make_cumulative_htrx" returns a data frame of the haplotype matrix.
+\code{\link{make_cumulative_htrx}} returns a data frame of the haplotype matrix.
 }
 \description{
 Two step cross-validation used to select the best HTRX model for longer haplotypes,
@@ -139,8 +148,8 @@ i.e. include at least 7 SNPs.
 Longer haplotypes are important for discovering interactions.
 However, there are \ifelse{html}{\out{3<sup>k</sup>}}{\eqn{3^k}}-1 haplotypes in HTRX
 if the region contains k SNPs,
-making HTRX (do_cv" function) unrealistic to apply on for regions with large numbers of SNPs.
-To address this issue, we proposed "cumulative HTRX" (function "do_cumulative_htrx")
+making HTRX (\code{\link{do_cv}}) unrealistic to apply on for regions with large numbers of SNPs.
+To address this issue, we proposed "cumulative HTRX" (\code{\link{do_cumulative_htrx}})
 that enables HTRX to run on longer haplotypes,
  i.e. haplotypes which include at least 7 SNPs (we recommend).
  There are 2 steps to implement cumulative HTRX.
@@ -181,22 +190,37 @@ and use these fitted models to compute the additional variance explained by feat
 Finally, select the candidate model with the biggest
 average out-of-sample R2 as the best model.
 
-Function "do_cumulative_htrx_step1" is the Step 1 (1)-(3) described above.
-Function "extend_haps" is used to select haplotypes in the Step 1 (2) described above.
-Function "make_cumulative_htrx" is used to generate the haplotype data
+Function \code{\link{do_cumulative_htrx_step1}} is the Step 1 (1)-(3) described above.
+Function \code{\link{extend_haps}} is used to select haplotypes in the Step 1 (2) described above.
+Function \code{\link{make_cumulative_htrx}} is used to generate the haplotype data
 (by adding a new SNP into the haplotypes) from M haplotypes to 3M+2 haplotypes,
 which is also described in the Step 1 (2)-(3).
 }
 \examples{
-## use dataset "SNP1", "SNP2" and "data_nosnp"
-## "SNP1" and "SNP2" are both genomes of 8 SNPs for 20,000 individuals
-## "data_nosnp" is a simulated dataset which contains the outcome (binary), sex, age and 18 PCs
+## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
+## "example_hap1" and "example_hap2" are
+## both genomes of 8 SNPs for 5,000 individuals (diploid data)
+## "example_data_nosnp" is a simulated dataset
+## which contains the outcome (binary), sex, age and 18 PCs
+
+## visualise the covariates data
+head(HTRX::example_data_nosnp)
+
+## visualise the genotype data for the first genome
+head(HTRX::example_hap1)
 
 ## we perform cumulative HTRX on all the 8 SNPs using 2-step cross-validation
-do_cumulative_htrx(data_nosnp,SNP1,SNP2,train_proportion=0.5,
-                   sim_times=2,featurecap=40,usebinary=1,randomorder=TRUE,
-                   method="stratified",criteria="BIC",
-                   runparallel=FALSE)
+## to compute additional variance explained by haplotypes
+## If the data is haploid, please set hap2=HTRX::example_hap1
+## If you want to compute total variance explained, please set gain=FALSE
+## For Linux/MAC users, we strongly encourage you to set runparallel=TRUE
+cumu_htrx_results <- do_cumulative_htrx(data_nosnp=HTRX::example_data_nosnp,
+                                        hap1=HTRX::example_hap1,
+                                        hap2=HTRX::example_hap2,
+                                        train_proportion=0.5,sim_times=1,
+                                        featurecap=6,usebinary=1,
+                                        randomorder=TRUE,method="stratified",
+                                        criteria="BIC",runparallel=FALSE)
 }
 \references{
 Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).

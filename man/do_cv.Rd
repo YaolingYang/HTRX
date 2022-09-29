@@ -18,7 +18,7 @@ do_cv(
   criteria = "BIC",
   gain = TRUE,
   runparallel = FALSE,
-  mc.cores = 10
+  mc.cores = 6
 )
 
 do_cv_step1(
@@ -29,9 +29,9 @@ do_cv_step1(
   usebinary = 1,
   method = "simple",
   criteria = "BIC",
-  seed = 123,
+  splitseed = 123,
   runparallel = FALSE,
-  mc.cores = 10
+  mc.cores = 6
 )
 
 infer_step1(
@@ -42,7 +42,7 @@ infer_step1(
   featurecap = dim(featuredata)[2],
   usebinary = 1,
   runparallel = FALSE,
-  mc.cores = 10
+  mc.cores = 6
 )
 
 infer_fixedfeatures(
@@ -64,15 +64,19 @@ and without SNPs or haplotypes.}
 \item{featuredata}{a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
 These features exclude all the data in data_nosnp, and will be selected using 2-step cross-validation.}
 
-\item{train_proportion}{a positive number between 0 and 1 giving the proportion of the training dataset when splitting data into 2 folds.}
+\item{train_proportion}{a positive number between 0 and 1 giving
+the proportion of the training dataset when splitting data into 2 folds.
+By default, train_proportion=0.5.}
 
-\item{sim_times}{an integer giving the number of simulations in step 1 (see details).}
+\item{sim_times}{an integer giving the number of simulations in step 1 (see details).
+By default, sim_times=20.}
 
-\item{featurecap}{a positive integer which manually sets the maximum number of independent features. By default, featurecap=40.}
+\item{featurecap}{a positive integer which manually sets the maximum number of independent features.
+By default, featurecap=40.}
 
 \item{usebinary}{a non-negative number representing different models.
 Use linear model if usebinary=0,
-use logistic regression model via fastglm if usebinary=1,
+use logistic regression model via fastglm if usebinary=1 (by default),
 and use logistic regression model via glm if usebinary>1.}
 
 \item{method}{the method used for data splitting, either "simple" (default) or "stratified".}
@@ -83,12 +87,13 @@ and use logistic regression model via glm if usebinary>1.}
 otherwise, report the total variance explained by all the variables.}
 
 \item{runparallel}{logical. Use parallel programming based on "mclapply" function or not.
-Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE.}
+Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE (default).}
 
-\item{mc.cores}{an integer giving the number of cores used for parallel programming. By default, mc.cores=10.
+\item{mc.cores}{an integer giving the number of cores used for parallel programming.
+By default, mc.cores=6.
 This only works when runparallel=TRUE.}
 
-\item{seed}{a positive integer giving the seed of data split.}
+\item{splitseed}{a positive integer giving the seed of data split.}
 
 \item{train}{a vector of the indexes of the training data.}
 
@@ -96,16 +101,19 @@ This only works when runparallel=TRUE.}
 
 \item{features}{a character of the fixed features.}
 
-\item{coefficients}{a vector giving the coefficients of the fixed features.}
+\item{coefficients}{a vector giving the coefficients of the fixed features.
+If the fixed features don't have fixed coefficients, set coefficients=NULL (default).}
 
-\item{R2only}{logical. If R2only=TRUE, function infer_fixedfeatures only returns the variance explained in the test data.}
+\item{R2only}{logical. If R2only=TRUE, function infer_fixedfeatures only
+returns the variance explained in the test data.
+By default, R2only=FALSE.}
 }
 \value{
-"do_cv" returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
+\code{\link{do_cv}} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
 
-"do_cv_step1" and "infer_step1" return a list of three candidate models selected by a single simulation.
+\code{\link{do_cv_step1}} and \code{\link{infer_step1}} return a list of three candidate models selected by a single simulation.
 
-"infer_fixedfeatures" returns a list of the variance explained in the test set if R2only=TRUE,
+\code{\link{infer_fixedfeatures}} returns a list of the variance explained in the test set if R2only=TRUE,
 otherwise, it returns a list of the variance explained in the test set, the model including all the variables,
 and the null model, i.e. the model with outcome and fixed covariates only.
 }
@@ -114,7 +122,7 @@ Two step cross-validation used to select the best HTRX model.
 It can be applied to select haplotypes based on HTR, or select SNPs.
 }
 \details{
-Function "do_cv" is the main function used for selecting haplotypes from HTRX or SNPs.
+Function \code{\link{do_cv}} is the main function used for selecting haplotypes from HTRX or SNPs.
 It is a two-step issued and is used for alleviate overfitting.
 
 Step 1: select candidate models. This is to address the model search problem,
@@ -149,28 +157,46 @@ and use these fitted models to compute the additional variance explained by feat
 Finally, select the candidate model with the biggest
 average out-of-sample R2 as the best model.
 
-Function "do_cv_step1" is the Step 1 (1)-(2) described above.
-Function "infer_step1" is the Step 1 (2) described above.
-Function "infer_fixedfeatures" is used to fit all the candidate models on the training dataset,
+Function \code{\link{do_cv_step1}} is the Step 1 (1)-(2) described above.
+Function \code{\link{infer_step1}} is the Step 1 (2) described above.
+Function \code{\link{infer_fixedfeatures}} is used to fit all the candidate models on the training dataset,
 and compute the additional variance explained by features (out-of-sample R2) in the test dataset,
 as described in the Step 2 (2) bove.
 }
 \examples{
-## use dataset "SNP1", "SNP2" and "data_nosnp"
-## "SNP1" and "SNP2" are both genomes of 8 SNPs for 20,000 individuals
-## "data_nosnp" is a simulated dataset which contains the outcome (binary), sex, age and 18 PCs
+## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
+## "example_hap1" and "example_hap2" are
+## both genomes of 8 SNPs for 5,000 individuals (diploid data)
+## "example_data_nosnp" is a simulated dataset
+## which contains the outcome (binary), sex, age and 18 PCs
+
+#' ## visualise the covariates data
+head(HTRX::example_data_nosnp)
+
+## visualise the genotype data for the first genome
+head(HTRX::example_hap1)
+
 ## we perform HTRX on the first 4 SNPs
 ## we first generate all the haplotype data, as defined by HTRX
-HTRX_matrix=make_htrx(SNP1[,1:4],SNP2[,1:4])
+HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],HTRX::example_hap2[,1:4])
+
+## If the data is haploid, please set
+## HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],HTRX::example_hap1[,1:4])
 
 ## next compute the maximum number of independent features
 featurecap=htrx_max(nsnp=4)
 
 ## then perform HTRX using 2-step cross-validation
-do_cv(data_nosnp,HTRX_matrix,train_proportion=0.5,
-      sim_times=3,featurecap=featurecap,usebinary=1,
-      method="stratified",criteria="BIC",
-      runparallel=FALSE)
+## to compute additional variance explained by haplotypes
+## If you want to compute total variance explained, please set gain=FALSE
+htrx_results <- do_cv(HTRX::example_data_nosnp,
+                      HTRX_matrix,train_proportion=0.5,
+                      sim_times=3,featurecap=featurecap,usebinary=1,
+                      method="stratified",criteria="BIC",
+                      gain=TRUE,runparallel=FALSE)
+
+## If we want to compute the total variance explained
+## we can set gain=FALSE in the above example
 }
 \references{
 Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
