@@ -1,3 +1,0 @@
-exportPattern("^[[:alpha:]]+")
-importFrom("methods", "is")
-importFrom("stats", "AIC", "binomial", "glm", "lm", "predict")
