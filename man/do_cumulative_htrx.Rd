@@ -5,7 +5,7 @@
 \alias{do_cumulative_htrx_step1}
 \alias{extend_haps}
 \alias{make_cumulative_htrx}
-\title{Cumulative HTRX}
+\title{Cumulative HTRX on long haplotypes}
 \usage{
 do_cumulative_htrx(
   data_nosnp,
@@ -24,7 +24,8 @@ do_cumulative_htrx(
   mc.cores = 6,
   rareremove = FALSE,
   rare_threshold = 0.001,
-  dataseed = 1:sim_times
+  dataseed = 1:sim_times,
+  returnall = FALSE
 )
 
 do_cumulative_htrx_step1(
@@ -121,6 +122,11 @@ This only works when rareremove=TRUE. By default, rare_threshold=0.001.}
 The length of dataseed must be the same as sim_times.
 By default, dataseed=1:sim_times.}
 
+\item{returnall}{logical. If returnall=TRUE, return all the candidate models and
+the variance explained in each of 10 test set for these the candidate models.
+If returnall=FALSE (default), only return the best candidate model
+and the variance explained in each of 10 test set by this model.}
+
 \item{splitseed}{a positive integer giving the seed that a single simulation in step 1 (see details) uses.}
 
 \item{featuredata}{a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
@@ -133,6 +139,8 @@ These features exclude all the data in data_nosnp, and will be selected using 2-
 \value{
 \code{\link{do_cumulative_htrx}} returns a list containing the best model selected,
  and the out-of-sample variance explained in each test set.
+ If returnall=TRUE, this function also returns all the candidate models,
+ and the out-of-sample variance explained in each test set by each candidate model.
 
 \code{\link{do_cv_step1}} returns a list of three candidate models selected by a single simulation.
 
@@ -213,7 +221,7 @@ head(HTRX::example_hap1)
 ## to compute additional variance explained by haplotypes
 ## If the data is haploid, please set hap2=HTRX::example_hap1
 ## If you want to compute total variance explained, please set gain=FALSE
-## For Linux/MAC users, we strongly encourage you to set runparallel=TRUE
+## For Linux/MAC users, we recommend setting runparallel=TRUE
 cumu_htrx_results <- do_cumulative_htrx(data_nosnp=HTRX::example_data_nosnp,
                                         hap1=HTRX::example_hap1,
                                         hap2=HTRX::example_hap2,
@@ -223,6 +231,8 @@ cumu_htrx_results <- do_cumulative_htrx(data_nosnp=HTRX::example_data_nosnp,
                                         criteria="BIC",runparallel=FALSE)
 }
 \references{
+Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+
 Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
 
 Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).

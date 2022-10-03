@@ -1,4 +1,4 @@
-#' @title HTRX: Haplotype Trend Regression with eXtra flexibility (HTRX)
+#' @title HTRX: Haplotype Trend Regression with eXtra flexibility
 #'
 #' @description
 #' This is the software for "HTRX - Haplotype Trend Regression with eXtra flexibility (HTRX)"

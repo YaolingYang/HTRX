@@ -4,7 +4,7 @@
 \name{HTRX-package}
 \alias{HTRX}
 \alias{HTRX-package}
-\title{HTRX: Haplotype Trend Regression with eXtra flexibility (HTRX)}
+\title{HTRX: Haplotype Trend Regression with eXtra flexibility}
 \description{
 This is the software for "HTRX - Haplotype Trend Regression with eXtra flexibility (HTRX)"
 based on the papar Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations, Barrie et al, 2022.
@@ -27,5 +27,5 @@ We proposed "cumulative HTRX" that enables HTRX to run on longer haplotypes: \co
 The code for HTRX is hosted at \url{https://github.com/YaolingYang/HTRX}.
 }
 \references{
-Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations, Barrie et al, 2022.
+Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
 }

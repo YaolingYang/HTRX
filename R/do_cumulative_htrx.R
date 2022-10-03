@@ -1,4 +1,4 @@
-#' @title Cumulative HTRX
+#' @title Cumulative HTRX on long haplotypes
 #' @description Two step cross-validation used to select the best HTRX model for longer haplotypes,
 #' i.e. include at least 7 SNPs.
 #' @name do_cumulative_htrx
@@ -41,6 +41,10 @@
 #' @param dataseed a vector of the seed that each simulation in step 1 (see details) uses.
 #' The length of dataseed must be the same as sim_times.
 #' By default, dataseed=1:sim_times.
+#' @param returnall logical. If returnall=TRUE, return all the candidate models and
+#' the variance explained in each of 10 test set for these the candidate models.
+#' If returnall=FALSE (default), only return the best candidate model
+#' and the variance explained in each of 10 test set by this model.
 #' @param splitseed a positive integer giving the seed that a single simulation in step 1 (see details) uses.
 #' @param featuredata a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
 #' These features exclude all the data in data_nosnp, and will be selected using 2-step cross-validation.
@@ -100,6 +104,8 @@
 #'
 #' @return \code{\link{do_cumulative_htrx}} returns a list containing the best model selected,
 #'  and the out-of-sample variance explained in each test set.
+#'  If returnall=TRUE, this function also returns all the candidate models,
+#'  and the out-of-sample variance explained in each test set by each candidate model.
 #'
 #' \code{\link{do_cv_step1}} returns a list of three candidate models selected by a single simulation.
 #'
@@ -146,7 +152,7 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
                                featurecap=40,usebinary=1,randomorder=TRUE,fixorder=NULL,
                                method="simple",criteria="BIC",gain=TRUE,
                                runparallel=FALSE,mc.cores=6,rareremove=FALSE,rare_threshold=0.001,
-                               dataseed=1:sim_times){
+                               dataseed=1:sim_times,returnall=FALSE){
 
   n_total=nrow(data_nosnp)
 
@@ -230,8 +236,15 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
 
-  return(list(R2_test_gain=R2_10fold[,best_candidate_index],
-              selected_features=selected_features))
+  if(returnall){
+    return(list(R2_test_gain_candidates=R2_10fold,
+                candidates=candidate_pool,
+                R2_test_gain=R2_10fold[,best_candidate_index],
+                selected_features=selected_features))
+  }else{
+    return(list(R2_test_gain=R2_10fold[,best_candidate_index],
+                selected_features=selected_features))
+  }
 }
 
 

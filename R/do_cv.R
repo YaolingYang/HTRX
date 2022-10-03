@@ -1,4 +1,4 @@
-#' @title Model selection (HTRX)
+#' @title HTRX Model selection on short haplotypes
 #' @description Two step cross-validation used to select the best HTRX model.
 #' It can be applied to select haplotypes based on HTR, or select SNPs.
 #' @name do_cv
@@ -27,6 +27,10 @@
 #' @param mc.cores an integer giving the number of cores used for parallel programming.
 #' By default, mc.cores=6.
 #' This only works when runparallel=TRUE.
+#' @param returnall logical. If returnall=TRUE, return all the candidate models and
+#' the variance explained in each of 10 test set for these the candidate models.
+#' If returnall=FALSE (default), only return the best candidate model
+#' and the variance explained in each of 10 test set by this model.
 #' @param splitseed a positive integer giving the seed of data split.
 #' @param train a vector of the indexes of the training data.
 #' @param test a vector of the indexes of the test data.
@@ -79,6 +83,8 @@
 #' as described in the Step 2 (2) bove.
 #'
 #' @return \code{\link{do_cv}} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
+#' If returnall=TRUE, this function also returns all the candidate models,
+#' and the out-of-sample variance explained in each test set by each candidate model.
 #'
 #' \code{\link{do_cv_step1}} and \code{\link{infer_step1}} return a list of three candidate models selected by a single simulation.
 #'
@@ -134,7 +140,7 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
                   sim_times=20,
                   featurecap=dim(featuredata)[2],usebinary=1,
                   method="simple",criteria="BIC",gain=TRUE,
-                  runparallel=FALSE,mc.cores=6){
+                  runparallel=FALSE,mc.cores=6,returnall=FALSE){
   #First step: obtain all the candidate models from running "sim_times" times simulation
   candidate_models=lapply(1:sim_times,function(s){
     results=do_cv_step1(data_nosnp,featuredata,train_proportion,
@@ -214,9 +220,15 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
   best_candidate_index=which.max(R2_10fold_average)
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
-
-  return(list(R2_test_gain=R2_10fold[,best_candidate_index],
-              selected_features=selected_features))
+  if(returnall){
+    return(list(R2_test_gain_candidates=R2_10fold,
+                candidates=candidate_pool,
+                R2_test_gain=R2_10fold[,best_candidate_index],
+                selected_features=selected_features))
+  }else{
+    return(list(R2_test_gain=R2_10fold[,best_candidate_index],
+                selected_features=selected_features))
+  }
 }
 
 

@@ -5,7 +5,7 @@
 \alias{do_cv_step1}
 \alias{infer_step1}
 \alias{infer_fixedfeatures}
-\title{Model selection (HTRX)}
+\title{HTRX Model selection on short haplotypes}
 \usage{
 do_cv(
   data_nosnp,
@@ -18,7 +18,8 @@ do_cv(
   criteria = "BIC",
   gain = TRUE,
   runparallel = FALSE,
-  mc.cores = 6
+  mc.cores = 6,
+  returnall = FALSE
 )
 
 do_cv_step1(
@@ -93,6 +94,11 @@ Note that for Windows users, "mclapply" doesn't work, so please set runparallel=
 By default, mc.cores=6.
 This only works when runparallel=TRUE.}
 
+\item{returnall}{logical. If returnall=TRUE, return all the candidate models and
+the variance explained in each of 10 test set for these the candidate models.
+If returnall=FALSE (default), only return the best candidate model
+and the variance explained in each of 10 test set by this model.}
+
 \item{splitseed}{a positive integer giving the seed of data split.}
 
 \item{train}{a vector of the indexes of the training data.}
@@ -110,6 +116,8 @@ By default, R2only=FALSE.}
 }
 \value{
 \code{\link{do_cv}} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
+If returnall=TRUE, this function also returns all the candidate models,
+and the out-of-sample variance explained in each test set by each candidate model.
 
 \code{\link{do_cv_step1}} and \code{\link{infer_step1}} return a list of three candidate models selected by a single simulation.
 
@@ -167,10 +175,10 @@ as described in the Step 2 (2) bove.
 ## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
 ## "example_hap1" and "example_hap2" are
 ## both genomes of 8 SNPs for 5,000 individuals (diploid data)
-## "example_data_nosnp" is a simulated dataset
+## "example_data_nosnp" is an example dataset
 ## which contains the outcome (binary), sex, age and 18 PCs
 
-#' ## visualise the covariates data
+## visualise the covariates data
 head(HTRX::example_data_nosnp)
 
 ## visualise the genotype data for the first genome
@@ -199,6 +207,8 @@ htrx_results <- do_cv(HTRX::example_data_nosnp,
 ## we can set gain=FALSE in the above example
 }
 \references{
+Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+
 Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
 
 Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
