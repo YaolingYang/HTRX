@@ -126,6 +126,7 @@
 #' ## which contains the outcome (binary), sex, age and 18 PCs
 #'
 #' ## visualise the covariates data
+#' ## we will use only the first two covariates: sex and age in the example
 #' head(HTRX::example_data_nosnp)
 #'
 #' ## visualise the genotype data for the first genome
@@ -136,13 +137,16 @@
 #' ## If the data is haploid, please set hap2=HTRX::example_hap1
 #' ## If you want to compute total variance explained, please set gain=FALSE
 #' ## For Linux/MAC users, we recommend setting runparallel=TRUE
-#' cumu_htrx_results <- do_cumulative_htrx(data_nosnp=HTRX::example_data_nosnp,
-#'                                         hap1=HTRX::example_hap1,
-#'                                         hap2=HTRX::example_hap2,
-#'                                         train_proportion=0.5,sim_times=1,
-#'                                         featurecap=6,usebinary=1,
+#' \dontrun{
+#' cumu_htrx_results <- do_cumulative_htrx(HTRX::example_data_nosnp,
+#'                                         HTRX::example_hap1,
+#'                                         HTRX::example_hap2,
+#'                                         train_proportion=0.5,sim_times=5,
+#'                                         featurecap=40,usebinary=1,
 #'                                         randomorder=TRUE,method="stratified",
-#'                                         criteria="BIC",runparallel=FALSE)
+#'                                         criteria="BIC",gain=TRUE,
+#'                                         runparallel=FALSE)
+#' }
 NULL
 
 #' @rdname do_cumulative_htrx

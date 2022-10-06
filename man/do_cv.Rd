@@ -179,6 +179,7 @@ as described in the Step 2 (2) bove.
 ## which contains the outcome (binary), sex, age and 18 PCs
 
 ## visualise the covariates data
+## we will use only the first two covariates: sex and age in the example
 head(HTRX::example_data_nosnp)
 
 ## visualise the genotype data for the first genome
@@ -186,25 +187,37 @@ head(HTRX::example_hap1)
 
 ## we perform HTRX on the first 4 SNPs
 ## we first generate all the haplotype data, as defined by HTRX
-HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],HTRX::example_hap2[,1:4])
+HTRX_matrix=make_htrx(HTRX::example_hap1[1:300,1:4],
+                      HTRX::example_hap2[1:300,1:4])
 
 ## If the data is haploid, please set
-## HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],HTRX::example_hap1[,1:4])
+## HTRX_matrix=make_htrx(HTRX::example_hap1[1:300,1:4],
+##                       HTRX::example_hap1[1:300,1:4])
 
-## next compute the maximum number of independent features
-featurecap=htrx_max(nsnp=4)
-
-## then perform HTRX using 2-step cross-validation
+## then perform HTRX using 2-step cross-validation in a single small example
 ## to compute additional variance explained by haplotypes
 ## If you want to compute total variance explained, please set gain=FALSE
-htrx_results <- do_cv(HTRX::example_data_nosnp,
+htrx_results <- do_cv(HTRX::example_data_nosnp[1:300,1:2],
                       HTRX_matrix,train_proportion=0.5,
-                      sim_times=3,featurecap=featurecap,usebinary=1,
-                      method="stratified",criteria="BIC",
+                      sim_times=1,featurecap=4,usebinary=1,
+                      method="simple",criteria="BIC",
                       gain=TRUE,runparallel=FALSE)
-
 ## If we want to compute the total variance explained
 ## we can set gain=FALSE in the above example
+
+## Below is an example with a large sample size and simulations
+\dontrun{
+HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],
+                      HTRX::example_hap1[,1:4])
+## next compute the maximum number of independent features
+featurecap=htrx_max(nsnp=4,cap=3)
+## then perform HTRX using 2-step cross-validation
+htrx_results <- do_cv(HTRX::example_data_nosnp,
+                      HTRX_matrix,train_proportion=0.5,
+                      sim_times=10,featurecap=featurecap,usebinary=1,
+                      method="stratified",criteria="BIC",
+                      gain=TRUE,runparallel=FALSE)
+}
 }
 \references{
 Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).

@@ -29,3 +29,12 @@ The code for HTRX is hosted at \url{https://github.com/YaolingYang/HTRX}.
 \references{
 Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
 }
+\author{
+\strong{Maintainer}: Yaoling Yang \email{yaoling.yang@bristol.ac.uk} (\href{https://orcid.org/0000-0003-4905-8097}{ORCID})
+
+Authors:
+\itemize{
+  \item Daniel Lawson \email{Dan.Lawson@bristol.ac.uk} (\href{https://orcid.org/0000-0002-5311-6213}{ORCID})
+}
+
+}
