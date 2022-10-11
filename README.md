@@ -41,7 +41,7 @@ recommend).
 ## Install R package “HTRX”
 
 ``` r
-devtools::install_github("YaolingYang/HTRX")
+install.packages("HTRX")
 ```
 
 ## Examples
