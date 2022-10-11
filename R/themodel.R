@@ -3,7 +3,6 @@
 #' @description Model-agnostic functions for model fitting (both linear and generalized linear models).
 #' @param formula a formula for model-fitting.
 #' @param data a data frame contains all the variables included in the formula.
-#' The phenotype variable must be named "outcome".
 #' @param usebinary a non-negative number representing different models.
 #' Use linear model if usebinary=0, use logistic regression model via fastglm if usebinary=1 (by default),
 #' and use logistic regression model via glm if usebinary>1.
@@ -35,6 +34,7 @@ NULL
 #' @rdname themodel
 #' @export
 themodel<- function(formula,data,usebinary=1,clean=TRUE){
+  colnames(data)[1]='outcome'
   if(usebinary==0){
     model=lm(formula=formula,data=data)
   }else if(usebinary>1){

@@ -7,7 +7,7 @@
 \usage{
 mypredict(model, newdata)
 
-computeR2(pred, y, usebinary = 1)
+computeR2(pred, outcome, usebinary = 1)
 }
 \arguments{
 \item{model}{a fitted model, which is the output of \code{\link{themodel}}.}
@@ -17,7 +17,7 @@ This data frame is used to make prediction on.}
 
 \item{pred}{a vector of the predicted outcome.}
 
-\item{y}{a vector of the actual outcome.}
+\item{outcome}{a vector of the actual outcome.}
 
 \item{usebinary}{a non-negative number representing different models.
 Use linear model if usebinary=0,

@@ -11,7 +11,8 @@ make_htrx(
   hap2 = hap1,
   rareremove = FALSE,
   rare_threshold = 0.001,
-  fixedfeature = NULL
+  fixedfeature = NULL,
+  max_int = NULL
 )
 
 make_htr(hap1, hap2 = hap1, rareremove = FALSE, rare_threshold = 0.001)
@@ -32,12 +33,15 @@ This only works when rareremove=TRUE. By default, rare_threshold=0.001.}
 
 \item{fixedfeature}{a character consisted of the names of haplotypes.
 This parameter can be "NULL" (by default) if all the haplotypes are used as variables.}
+
+\item{max_int}{a positive integer which specifies the maximum number of SNPs that can interact.
+If no value is given, interactions between all the SNPs will be considered.}
 }
 \value{
 a data frame of the feature data (either for SNPs, HTR or HTRX).
 }
 \description{
-Generate the feature data, either the genotype data for SNPs (\code{\link{make_snp}}),
+Generate the feature data, either the genotype data for single nucleotide polymorphisms (SNPs) (\code{\link{make_snp}}),
 the feature data for Haplotype Trend Regression (HTR) (\code{\link{make_htr}}), or
 the feature data for Haplotype Trend Regression with eXtra flexibility (HTRX) (\code{\link{make_htrx}}).
 }
@@ -64,8 +68,9 @@ make_snp(hap1,hap2)
 ## create feature data for "HTR" removing haplotypes rarer than 0.5\%
 make_htr(hap1,hap2,rareremove=TRUE,0.005)
 
-## create feature data for "HTRX" without removing haplotypes
-make_htrx(hap1,hap2)
+## create feature data for "HTRX"
+## retaining haplotypes with interaction across at most 3 SNPs
+make_htrx(hap1,hap2,max_int=3)
 
 ## create feature data for feature "01XX" and "X101"
 ## without removing haplotypes

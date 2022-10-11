@@ -19,7 +19,10 @@ do_cv(
   gain = TRUE,
   runparallel = FALSE,
   mc.cores = 6,
-  returnall = FALSE
+  tenfoldseed = 123,
+  returnall = FALSE,
+  returnwork = FALSE,
+  verbose = FALSE
 )
 
 do_cv_step1(
@@ -32,7 +35,8 @@ do_cv_step1(
   criteria = "BIC",
   splitseed = 123,
   runparallel = FALSE,
-  mc.cores = 6
+  mc.cores = 6,
+  verbose = FALSE
 )
 
 infer_step1(
@@ -43,7 +47,8 @@ infer_step1(
   featurecap = dim(featuredata)[2],
   usebinary = 1,
   runparallel = FALSE,
-  mc.cores = 6
+  mc.cores = 6,
+  verbose = FALSE
 )
 
 infer_fixedfeatures(
@@ -55,11 +60,13 @@ infer_fixedfeatures(
   coefficients = NULL,
   gain = TRUE,
   usebinary = 1,
-  R2only = FALSE
+  R2only = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
-\item{data_nosnp}{a data frame with outcome and fixed covariates (for example, sex, age and the first 18 PCs)
+\item{data_nosnp}{a data frame with outcome (the outcome must be the first column)
+ and fixed covariates (for example, sex, age and the first 18 PCs)
 and without SNPs or haplotypes.}
 
 \item{featuredata}{a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
@@ -94,10 +101,20 @@ Note that for Windows users, "mclapply" doesn't work, so please set runparallel=
 By default, mc.cores=6.
 This only works when runparallel=TRUE.}
 
+\item{tenfoldseed}{a positive integer specifying the seed used to
+split data for 10-fold cross validation. By default, tenfoldseed=123.}
+
 \item{returnall}{logical. If returnall=TRUE, return all the candidate models and
 the variance explained in each of 10 test set for these the candidate models.
 If returnall=FALSE (default), only return the best candidate model
 and the variance explained in each of 10 test set by this model.}
+
+\item{returnwork}{logical. If returnwork=TRUE, return a vector of the maximum number
+of features that are assessed in each simulation, excluding the fixed covariates.
+This is used to assess how much computational 'work' is done in step 1(2) of HTRX (see details).
+By default, returnwork=FALSE.}
+
+\item{verbose}{logical. If verbose=TRUE, print out the inference steps. By default, verbose=FALSE.}
 
 \item{splitseed}{a positive integer giving the seed of data split.}
 
@@ -105,9 +122,9 @@ and the variance explained in each of 10 test set by this model.}
 
 \item{test}{a vector of the indexes of the test data.}
 
-\item{features}{a character of the fixed features.}
+\item{features}{a character of the names of the fixed features, excluding the intercept.}
 
-\item{coefficients}{a vector giving the coefficients of the fixed features.
+\item{coefficients}{a vector giving the coefficients of the fixed features, including the intercept.
 If the fixed features don't have fixed coefficients, set coefficients=NULL (default).}
 
 \item{R2only}{logical. If R2only=TRUE, function infer_fixedfeatures only
@@ -126,8 +143,8 @@ otherwise, it returns a list of the variance explained in the test set, the mode
 and the null model, i.e. the model with outcome and fixed covariates only.
 }
 \description{
-Two step cross-validation used to select the best HTRX model.
-It can be applied to select haplotypes based on HTR, or select SNPs.
+Two-step cross-validation used to select the best HTRX model.
+It can be applied to select haplotypes based on HTR, or select single nucleotide polymorphisms (SNPs).
 }
 \details{
 Function \code{\link{do_cv}} is the main function used for selecting haplotypes from HTRX or SNPs.
@@ -201,26 +218,27 @@ htrx_results <- do_cv(HTRX::example_data_nosnp[1:300,1:2],
                       HTRX_matrix,train_proportion=0.5,
                       sim_times=1,featurecap=4,usebinary=1,
                       method="simple",criteria="BIC",
-                      gain=TRUE,runparallel=FALSE)
+                      gain=TRUE,runparallel=FALSE,verbose=TRUE)
 ## If we want to compute the total variance explained
 ## we can set gain=FALSE in the above example
 
 ## Below is an example with a large sample size and simulations
-\dontrun{
+\donttest{
 HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],
                       HTRX::example_hap1[,1:4])
 ## next compute the maximum number of independent features
-featurecap=htrx_max(nsnp=4,cap=3)
+featurecap=htrx_max(nsnp=4,cap=10)
 ## then perform HTRX using 2-step cross-validation
-htrx_results <- do_cv(HTRX::example_data_nosnp,
+htrx_results <- do_cv(HTRX::example_data_nosnp[,1:3],
                       HTRX_matrix,train_proportion=0.5,
-                      sim_times=10,featurecap=featurecap,usebinary=1,
+                      sim_times=5,featurecap=featurecap,usebinary=1,
                       method="stratified",criteria="BIC",
-                      gain=TRUE,runparallel=FALSE)
+                      gain=TRUE,runparallel=FALSE,verbose=TRUE)
 }
+#This result would be more precise when setting larger sim_times and featurecap
 }
 \references{
-Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
 
 Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
 

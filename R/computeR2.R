@@ -6,7 +6,7 @@
 #' @param newdata a data frame which contains all the variables included in the model.
 #' This data frame is used to make prediction on.
 #' @param pred a vector of the predicted outcome.
-#' @param y a vector of the actual outcome.
+#' @param outcome a vector of the actual outcome.
 #' @param usebinary a non-negative number representing different models.
 #' Use linear model if usebinary=0,
 #' use logistic regression model via fastglm if usebinary=1 (by default),
@@ -40,6 +40,7 @@ NULL
 #' @rdname computeR2
 #' @export
 mypredict<-function(model,newdata){
+  colnames(newdata)[1]='outcome'
   if(is(model,"fastglm")){
     tcol=names(model$coefficients)
     newdata=cbind("(Intercept)"=1,newdata)
@@ -52,13 +53,13 @@ mypredict<-function(model,newdata){
 
 #' @rdname computeR2
 #' @export
-computeR2 <- function(pred,y,usebinary=1){
+computeR2 <- function(pred,outcome,usebinary=1){
   if(usebinary==0){
-    return(1-sum((y-pred)^2)/sum((y-mean(y))^2))
+    return(1-sum((outcome-pred)^2)/sum((outcome-mean(outcome))^2))
   }else{
-    loglik_model <- sum(-log(1+exp(pred))+y*pred)
-    pred_null=log(mean(y)/(1-mean(y)))
-    loglik_null <- sum(-log(1+exp(pred_null))+y*pred_null)
+    loglik_model <- sum(-log(1+exp(pred))+outcome*pred)
+    pred_null=log(mean(outcome)/(1-mean(outcome)))
+    loglik_null <- sum(-log(1+exp(pred_null))+outcome*pred_null)
     return(1-loglik_model/loglik_null)
   }
 }

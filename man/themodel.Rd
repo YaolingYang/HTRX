@@ -9,8 +9,7 @@ themodel(formula, data, usebinary = 1, clean = TRUE)
 \arguments{
 \item{formula}{a formula for model-fitting.}
 
-\item{data}{a data frame contains all the variables included in the formula.
-The phenotype variable must be named "outcome".}
+\item{data}{a data frame contains all the variables included in the formula.}
 
 \item{usebinary}{a non-negative number representing different models.
 Use linear model if usebinary=0, use logistic regression model via fastglm if usebinary=1 (by default),

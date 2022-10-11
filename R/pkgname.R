@@ -4,7 +4,7 @@
 #' This is the software for "HTRX - Haplotype Trend Regression with eXtra flexibility (HTRX)"
 #' based on the papar Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations, Barrie et al, 2022.
 #'
-#' HTRX searches for haplotype patterns that include single SNPs and non-contiguous haplotypes.
+#' HTRX searches for haplotype patterns that include single nucleotide polymorphisms (SNPs) and non-contiguous haplotypes.
 #'
 #' HTRX is a template gives a value for each SNP taking values of ‘0’ or ‘1’, reflecting
 #' whether the reference allele of each SNP is present or absent, or an ‘X’ meaning either value is allowed.
@@ -21,8 +21,13 @@
 #'
 #' The code for HTRX is hosted at \url{https://github.com/YaolingYang/HTRX}.
 #'
-#' @references
-#' Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+#' @references Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+#'
+#' Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
+#'
+#' Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
+#'
+#' McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
 #' @importFrom methods is
 "_PACKAGE"
 #> [1] "_PACKAGE"

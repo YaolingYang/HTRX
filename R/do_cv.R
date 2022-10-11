@@ -1,9 +1,10 @@
 #' @title HTRX Model selection on short haplotypes
-#' @description Two step cross-validation used to select the best HTRX model.
-#' It can be applied to select haplotypes based on HTR, or select SNPs.
+#' @description Two-step cross-validation used to select the best HTRX model.
+#' It can be applied to select haplotypes based on HTR, or select single nucleotide polymorphisms (SNPs).
 #' @name do_cv
 #'
-#' @param data_nosnp a data frame with outcome and fixed covariates (for example, sex, age and the first 18 PCs)
+#' @param data_nosnp a data frame with outcome (the outcome must be the first column)
+#'  and fixed covariates (for example, sex, age and the first 18 PCs)
 #' and without SNPs or haplotypes.
 #' @param featuredata a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
 #' These features exclude all the data in data_nosnp, and will be selected using 2-step cross-validation.
@@ -27,15 +28,22 @@
 #' @param mc.cores an integer giving the number of cores used for parallel programming.
 #' By default, mc.cores=6.
 #' This only works when runparallel=TRUE.
+#' @param tenfoldseed a positive integer specifying the seed used to
+#' split data for 10-fold cross validation. By default, tenfoldseed=123.
 #' @param returnall logical. If returnall=TRUE, return all the candidate models and
 #' the variance explained in each of 10 test set for these the candidate models.
 #' If returnall=FALSE (default), only return the best candidate model
 #' and the variance explained in each of 10 test set by this model.
+#' @param returnwork logical. If returnwork=TRUE, return a vector of the maximum number
+#' of features that are assessed in each simulation, excluding the fixed covariates.
+#' This is used to assess how much computational 'work' is done in step 1(2) of HTRX (see details).
+#' By default, returnwork=FALSE.
+#' @param verbose logical. If verbose=TRUE, print out the inference steps. By default, verbose=FALSE.
 #' @param splitseed a positive integer giving the seed of data split.
 #' @param train a vector of the indexes of the training data.
 #' @param test a vector of the indexes of the test data.
-#' @param features a character of the fixed features.
-#' @param coefficients a vector giving the coefficients of the fixed features.
+#' @param features a character of the names of the fixed features, excluding the intercept.
+#' @param coefficients a vector giving the coefficients of the fixed features, including the intercept.
 #' If the fixed features don't have fixed coefficients, set coefficients=NULL (default).
 #' @param R2only logical. If R2only=TRUE, function infer_fixedfeatures only
 #' returns the variance explained in the test data.
@@ -92,7 +100,7 @@
 #' otherwise, it returns a list of the variance explained in the test set, the model including all the variables,
 #' and the null model, i.e. the model with outcome and fixed covariates only.
 #'
-#' @references Barrie, W. et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+#' @references Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
 #'
 #' Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
 #'
@@ -128,23 +136,24 @@
 #'                       HTRX_matrix,train_proportion=0.5,
 #'                       sim_times=1,featurecap=4,usebinary=1,
 #'                       method="simple",criteria="BIC",
-#'                       gain=TRUE,runparallel=FALSE)
+#'                       gain=TRUE,runparallel=FALSE,verbose=TRUE)
 #' ## If we want to compute the total variance explained
 #' ## we can set gain=FALSE in the above example
 #'
 #' ## Below is an example with a large sample size and simulations
-#' \dontrun{
+#' \donttest{
 #' HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],
 #'                       HTRX::example_hap1[,1:4])
 #' ## next compute the maximum number of independent features
-#' featurecap=htrx_max(nsnp=4,cap=3)
+#' featurecap=htrx_max(nsnp=4,cap=10)
 #' ## then perform HTRX using 2-step cross-validation
-#' htrx_results <- do_cv(HTRX::example_data_nosnp,
+#' htrx_results <- do_cv(HTRX::example_data_nosnp[,1:3],
 #'                       HTRX_matrix,train_proportion=0.5,
-#'                       sim_times=10,featurecap=featurecap,usebinary=1,
+#'                       sim_times=5,featurecap=featurecap,usebinary=1,
 #'                       method="stratified",criteria="BIC",
-#'                       gain=TRUE,runparallel=FALSE)
+#'                       gain=TRUE,runparallel=FALSE,verbose=TRUE)
 #' }
+#' #This result would be more precise when setting larger sim_times and featurecap
 NULL
 
 #' @rdname do_cv
@@ -153,13 +162,17 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
                   sim_times=20,
                   featurecap=dim(featuredata)[2],usebinary=1,
                   method="simple",criteria="BIC",gain=TRUE,
-                  runparallel=FALSE,mc.cores=6,returnall=FALSE){
+                  runparallel=FALSE,mc.cores=6,tenfoldseed=123,
+                  returnall=FALSE,returnwork=FALSE,verbose=FALSE){
+
+  colnames(data_nosnp)[1]='outcome'
+
   #First step: obtain all the candidate models from running "sim_times" times simulation
   candidate_models=lapply(1:sim_times,function(s){
     results=do_cv_step1(data_nosnp,featuredata,train_proportion,
                         featurecap=featurecap,usebinary=usebinary,
                         method=method,criteria=criteria,splitseed=s,
-                        runparallel=runparallel,mc.cores=mc.cores)
+                        runparallel=runparallel,mc.cores=mc.cores,verbose=verbose)
   })
 
   #extract all the candidate models
@@ -185,11 +198,18 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
 
   candidate_pool=unique(candidate_pool)
 
-  cat('Step 1 selects',nrow(candidate_pool),'candidate models','\n')
+  if(verbose) cat('Step 1 selects',nrow(candidate_pool),'candidate models','\n')
+
+  if(returnwork){
+    work=vector()
+    for(i in 1:sim_times){
+      work[i]=candidate_models[[i]]$max_feature_sim
+    }
+  }
 
   n_total=nrow(data_nosnp)
 
-  set.seed(1)
+  set.seed(tenfoldseed)
 
   #split data into 10 folds
   if(method=="simple"){
@@ -205,42 +225,65 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
   R2_10fold_average=vector()
 
   for(i in 1:nrow(candidate_pool)){
-    cat('Candidate model',i,'has feature',unlist(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),'\n')
+    if(verbose) cat('Candidate model',i,'has feature',
+                    unlist(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),'\n')
     if(runparallel){
       R2_test_gain=parallel::mclapply(1:10,function(s){
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
                             features=as.character(gsub('`','',candidate_pool[i,which(!is.na(candidate_pool[i,]))])),
-                            usebinary=usebinary,gain=gain,R2only=TRUE)
+                            usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
       },mc.cores=mc.cores)
     }else{
       R2_test_gain=lapply(1:10,function(s){
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
                             features=as.character(gsub('`','',candidate_pool[i,which(!is.na(candidate_pool[i,]))])),
-                            usebinary=usebinary,gain=gain,R2only=TRUE)
+                            usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
       })
     }
     R2_10fold[,i]=unlist(R2_test_gain)
     R2_10fold_average[i]=mean(R2_10fold[,i])
     if(gain){
-      cat('Average gain for candidate model',i,'is',R2_10fold_average[i],'\n')
+      if(verbose) cat('Average gain for candidate model',i,'is',R2_10fold_average[i],'\n')
     }else{
-      cat('Average total variance explained by candidate model',i,'is',R2_10fold_average[i],'\n')
+      if(verbose) cat('Average total variance explained by candidate model',i,'is',
+                      R2_10fold_average[i],'\n')
     }
 
   }
 
   #select the best model based on the largest out-of-sample R^2 from 10-fold cv
   best_candidate_index=which.max(R2_10fold_average)
+  if(gain){
+    if(verbose) cat('The best model is Model',best_candidate_index,'with average gain',
+                    R2_10fold_average[best_candidate_index],'\n')
+  }else{
+    if(verbose) cat('The best model is Model',best_candidate_index,'which explains',
+                    R2_10fold_average[best_candidate_index],'average total variance \n')
+  }
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
   if(returnall){
-    return(list(R2_test_gain_candidates=R2_10fold,
-                candidates=candidate_pool,
-                R2_test_gain=R2_10fold[,best_candidate_index],
-                selected_features=selected_features))
+    if(returnwork){
+      return(list(R2_test_gain_candidates=R2_10fold,
+                  candidates=candidate_pool,
+                  R2_test_gain=R2_10fold[,best_candidate_index],
+                  selected_features=selected_features,
+                  work=work))
+    }else{
+      return(list(R2_test_gain_candidates=R2_10fold,
+                  candidates=candidate_pool,
+                  R2_test_gain=R2_10fold[,best_candidate_index],
+                  selected_features=selected_features))
+    }
   }else{
-    return(list(R2_test_gain=R2_10fold[,best_candidate_index],
-                selected_features=selected_features))
+    if(returnwork){
+      return(list(R2_test_gain=R2_10fold[,best_candidate_index],
+                  selected_features=selected_features,
+                  work=work))
+    }else{
+      return(list(R2_test_gain=R2_10fold[,best_candidate_index],
+                  selected_features=selected_features))
+    }
   }
 }
 
@@ -250,7 +293,10 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
 do_cv_step1 <- function(data_nosnp,featuredata,train_proportion=0.5,
                         featurecap=dim(featuredata)[2],usebinary=1,
                         method="simple",criteria="BIC",
-                        splitseed=123,runparallel=FALSE,mc.cores=6){
+                        splitseed=123,runparallel=FALSE,mc.cores=6,verbose=FALSE){
+
+  colnames(data_nosnp)[1]='outcome'
+
   #The first step for HTRX
   #split the dataset at first
   #Then pass all the required data/parameters to "infer_step1" function to select candidate models
@@ -265,7 +311,7 @@ do_cv_step1 <- function(data_nosnp,featuredata,train_proportion=0.5,
   res  <- infer_step1(data_nosnp,featuredata,
                       split$train,criteria=criteria,
                       featurecap=featurecap,usebinary=usebinary,
-                      runparallel=runparallel,mc.cores=mc.cores)
+                      runparallel=runparallel,mc.cores=mc.cores,verbose=verbose)
 
   return(res)
 }
@@ -276,7 +322,10 @@ do_cv_step1 <- function(data_nosnp,featuredata,train_proportion=0.5,
 infer_step1 <- function(data_nosnp,featuredata,
                         train,criteria="BIC",
                         featurecap=dim(featuredata)[2],usebinary=1,
-                        runparallel=FALSE, mc.cores=6) {
+                        runparallel=FALSE, mc.cores=6,verbose=FALSE) {
+
+  colnames(data_nosnp)[1]='outcome'
+
   ## It's Step 1: select candidate models
   ## For a variable called "outcome" in "data_nosnp"
   ## appending and sequentially searching one feature at a time in "featuredata"
@@ -296,19 +345,24 @@ infer_step1 <- function(data_nosnp,featuredata,
   featurename <- vector()
   data_use=data_nosnp
 
+  if(featurecap>dim(featuredata)[2]) featurecap=dim(featuredata)[2]
+
   ##train
-  print("Training...")
+  if(verbose) print("Training...")
+
+  ##store the maximum number of features fit in the simulation
+  max_feature_sim=featurecap
   for(i in 1:featurecap){
-    cat('Adding Feature Number',i,'\n')
+    if(verbose) cat('Adding Feature Number',i,'\n')
     cal <- function(j){
       data_try=cbind(data_use[train,,drop=FALSE],featuredata[train,j,drop=FALSE])
       model_try=themodel(outcome~.,data_try,usebinary)
       if(criteria=="AIC"){
         information_try_gain = AIC(model_try)
-        cat('... trying feature',j,colnames(featuredata)[j],'with AIC',information_try_gain,'\n')
+        if(verbose) cat('... trying feature',j,colnames(featuredata)[j],'with AIC',information_try_gain,'\n')
       }else{
         information_try_gain = AIC(model_try,k=log(nrow(data_try)))
-        cat('... trying feature',j,colnames(featuredata)[j],'with BIC',information_try_gain,'\n')
+        if(verbose) cat('... trying feature',j,colnames(featuredata)[j],'with BIC',information_try_gain,'\n')
       }
       return(information_try_gain)
     }
@@ -330,11 +384,12 @@ infer_step1 <- function(data_nosnp,featuredata,
     colnames(data_use)[ncol(data_use)]=featurename[i]
     featurelist=featurelist[-minnumber]
 
-    cat('... Using feature',minseq[i],colnames(featuredata)[minseq[i]],'\n')
+    if(verbose) cat('... Using feature',minseq[i],colnames(featuredata)[minseq[i]],'\n')
 
     #keep three different models to increase the models in the candidate model pool
     if(i>=3){
       if(information_each[i-1]>information_each[i-2]){
+        max_feature_sim <- i
         break;
       }
     }
@@ -346,20 +401,21 @@ infer_step1 <- function(data_nosnp,featuredata,
   if(featurecap==2){
     n_feature = order(information_each,decreasing=FALSE)[1:2]
 
-    cat('BIC selects',n_feature[1],'features but we also keep models with',
-        n_feature[2],'features \n')
+    if(verbose) cat('BIC selects',n_feature[1],'features but we also keep models with',
+                    n_feature[2],'features \n')
 
     return(list(model1=modellist[[n_feature[1]]],
                 model2=modellist[[n_feature[2]]]))
   }else{
     n_feature = order(information_each,decreasing=FALSE)[1:3]
 
-    cat('BIC selects',n_feature[1],'features but we also keep models with',
-        n_feature[2],'and',n_feature[3],'features \n')
+    if(verbose) cat('BIC selects',n_feature[1],'features but we also keep models with',
+                    n_feature[2],'and',n_feature[3],'features \n')
 
     return(list(model1=modellist[[n_feature[1]]],
                 model2=modellist[[n_feature[2]]],
-                model3=modellist[[n_feature[3]]]))
+                model3=modellist[[n_feature[3]]],
+                max_feature_sim=max_feature_sim))
   }
 
 }
@@ -369,7 +425,10 @@ infer_step1 <- function(data_nosnp,featuredata,
 #' @export
 infer_fixedfeatures <- function(data_nosnp,featuredata,train=(1:nrow(data_nosnp))[-test],test,
                                 features,coefficients=NULL,gain=TRUE,usebinary=1,
-                                R2only=FALSE){
+                                R2only=FALSE,verbose=FALSE){
+
+  colnames(data_nosnp)[1]='outcome'
+
   ## Make a model with a specified set of features from the training data
   ## Reporting the results on the test data
   ## Optionally setting coefficients
@@ -377,7 +436,7 @@ infer_fixedfeatures <- function(data_nosnp,featuredata,train=(1:nrow(data_nosnp)
   model_use=themodel(outcome~.,data_use[train,,drop=FALSE],usebinary)
   if(gain) model_nosnp=themodel(outcome~.,data_nosnp[train,,drop=FALSE],usebinary)
   if(!all(is.null(coefficients))){
-    model_use$coefficients[]=coefficients[names(model_use$coefficients)]
+    model_use$coefficients[]=coefficients
   }
   R2_use_gain = computeR2(mypredict(model_use,
                                     newdata=data_use[test,,drop=FALSE]),
@@ -387,9 +446,9 @@ infer_fixedfeatures <- function(data_nosnp,featuredata,train=(1:nrow(data_nosnp)
                                        newdata=data_nosnp[test,,drop=FALSE]),
                              data_nosnp[test,"outcome"],usebinary)
     R2_use_gain=R2_use_gain - R2_nosnp_test
-    cat('Relative gain = ',R2_use_gain,'\n')
+    if(verbose) cat('Relative gain = ',R2_use_gain,'\n')
   }else{
-    cat('Total variance explained = ',R2_use_gain,'\n')
+    if(verbose) cat('Total variance explained = ',R2_use_gain,'\n')
   }
   if(R2only){
     list(R2=R2_use_gain)

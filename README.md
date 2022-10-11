@@ -20,8 +20,8 @@ populations. bioRxiv
 ## Introduction:
 
 Haplotype Trend Regression with eXtra flexibility (HTRX) searches for
-haplotype patterns that include single SNPs and non-contiguous
-haplotypes.
+haplotype patterns that include single nucleotide polymorphisms (SNPs)
+and non-contiguous haplotypes.
 
 HTRX is a template gives a value for each SNP taking values of ‘0’ or
 ‘1’, reflecting whether the reference allele of each SNP is present or

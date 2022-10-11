@@ -1,5 +1,5 @@
 #' @title Generate haplotype data
-#' @description Generate the feature data, either the genotype data for SNPs (\code{\link{make_snp}}),
+#' @description Generate the feature data, either the genotype data for single nucleotide polymorphisms (SNPs) (\code{\link{make_snp}}),
 #' the feature data for Haplotype Trend Regression (HTR) (\code{\link{make_htr}}), or
 #' the feature data for Haplotype Trend Regression with eXtra flexibility (HTRX) (\code{\link{make_htrx}}).
 #' @name make_htrx
@@ -12,6 +12,8 @@
 #' This only works when rareremove=TRUE. By default, rare_threshold=0.001.
 #' @param fixedfeature a character consisted of the names of haplotypes.
 #' This parameter can be "NULL" (by default) if all the haplotypes are used as variables.
+#' @param max_int a positive integer which specifies the maximum number of SNPs that can interact.
+#' If no value is given, interactions between all the SNPs will be considered.
 #'
 #' @details If there are n SNPs, there are \ifelse{html}{\out{2<sup>n</sup>}}{\eqn{2^n}} different haplotypes created by HTR,
 #' and \ifelse{html}{\out{3<sup>n</sup>}}{\eqn{3^n}}-1 different haplotypes created by HTRX.
@@ -35,8 +37,9 @@
 #' ## create feature data for "HTR" removing haplotypes rarer than 0.5%
 #' make_htr(hap1,hap2,rareremove=TRUE,0.005)
 #'
-#' ## create feature data for "HTRX" without removing haplotypes
-#' make_htrx(hap1,hap2)
+#' ## create feature data for "HTRX"
+#' ## retaining haplotypes with interaction across at most 3 SNPs
+#' make_htrx(hap1,hap2,max_int=3)
 #'
 #' ## create feature data for feature "01XX" and "X101"
 #' ## without removing haplotypes
@@ -49,7 +52,8 @@ NULL
 
 #' @rdname make_htrx
 #' @export
-make_htrx<-function(hap1,hap2=hap1,rareremove=FALSE,rare_threshold=0.001,fixedfeature=NULL){
+make_htrx<-function(hap1,hap2=hap1,rareremove=FALSE,rare_threshold=0.001,
+                    fixedfeature=NULL,max_int=NULL){
   ## Make a HTRX feature matrix
   ## All the combinations of 0,1,X of SNPs
   ## Each element of combinations become 'factor'.
@@ -58,6 +62,16 @@ make_htrx<-function(hap1,hap2=hap1,rareremove=FALSE,rare_threshold=0.001,fixedfe
   if(is.null(fixedfeature)){
     combinations=expand.grid(lapply(1:nsnp,function(x)c(0,1,'X')))
     combinations=combinations[-nrow(combinations),]
+
+    #retain rows with the interaction between max_int SNPs.
+    if(!is.null(max_int)){
+      retain_index <- vector()
+      for(i in 1:nrow(combinations)){
+        if(length(which(combinations[i,]!='X'))<=max_int) retain_index=c(retain_index,i);
+      }
+      combinations=combinations[retain_index,]
+    }
+
     HTRX_matrix <- as.data.frame(matrix(0,nrow=n_total,ncol=nrow(combinations)))
     HTRX_matrix2 <- as.data.frame(matrix(0,nrow=n_total,ncol=nrow(combinations)))
     ##the genotype must be 0 for reference allele and 1 for alternative allele
@@ -115,13 +129,13 @@ make_htrx<-function(hap1,hap2=hap1,rareremove=FALSE,rare_threshold=0.001,fixedfe
   #remove haplotypes with frequency=100%
   missing <- vector()
   for(i in 1:nrow(combinations)){
-    if(sum(HTRX_matrix[,i])==0){
+    if(sum(HTRX_matrix[,i])==0||sum(HTRX_matrix[,i])==nrow(HTRX_matrix)){
       missing=c(missing,i)
     }
   }
   if(length(missing)!=0) HTRX_matrix=HTRX_matrix[,-missing];
 
-  #remove rare SNPs or not
+  #remove rare haplotypes or not
   if(rareremove){
     rare <- vector()
     for(d in 1:ncol(HTRX_matrix)){
@@ -165,6 +179,16 @@ make_htr<-function(hap1,hap2=hap1,rareremove=FALSE,rare_threshold=0.001){
   HTR_matrix = HTR_matrix + HTR_matrix2
   colnames(HTR_matrix)=Reduce(paste0,combinations)
 
+  #remove haplotypes with frequency=100%
+  missing <- vector()
+  for(i in 1:nrow(combinations)){
+    if(sum(HTR_matrix[,i])==0||sum(HTR_matrix[,i])==nrow(HTR_matrix)){
+      missing=c(missing,i)
+    }
+  }
+  if(length(missing)!=0) HTR_matrix=HTR_matrix[,-missing];
+
+  ##remove rare haplotypes or not
   if(rareremove){
     rare <- vector()
     for(d in 1:ncol(HTR_matrix)){
@@ -187,6 +211,8 @@ make_snp<-function(hap1,hap2=hap1,rareremove=FALSE,rare_threshold=0.001){
   ## Convenience function to use the same format for making a SNP matrix from two haplotype matrices
   n=dim(hap1)[1]
   SNP=hap1+hap2
+
+  #remove rare SNPs or not
   if(rareremove){
     rare <- vector()
     for(d in 1:ncol(SNP)){
