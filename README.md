@@ -6,9 +6,9 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-This is the location for the HTRX tool that was used in [Barrie, W. et
-al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe
-populations. bioRxiv
+This is the location for the HTRX tool that was used in [Barrie W, Yang
+Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated
+in Pastoralist Steppe populations. bioRxiv
 (2022)](https://www.biorxiv.org/content/10.1101/2022.09.23.509097v1).
 
 -   Authors:  
