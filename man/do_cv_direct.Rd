@@ -2,7 +2,7 @@
 % Please edit documentation in R/do_cv_direct.R
 \name{do_cv_direct}
 \alias{do_cv_direct}
-\title{Direct HTRX: 10-fold cross-validation on short haplotypes}
+\title{Direct HTRX: k-fold cross-validation on short haplotypes}
 \usage{
 do_cv_direct(
   data_nosnp,
@@ -14,7 +14,8 @@ do_cv_direct(
   gain = TRUE,
   runparallel = FALSE,
   mc.cores = 6,
-  tenfoldseed = 123,
+  fold = 10,
+  kfoldseed = 123,
   verbose = FALSE
 )
 }
@@ -48,21 +49,24 @@ Note that for Windows users, \code{mclapply} doesn't work, so please set \code{r
 By default, \code{mc.cores=6}.
 This only works when \code{runparallel=TRUE}.}
 
-\item{tenfoldseed}{a positive integer specifying the seed used to
-split data for 10-fold cross validation. By default, \code{tenfoldseed=123}.}
+\item{fold}{a positive integer specifying how many folds
+the data should be split into for cross-validation.}
+
+\item{kfoldseed}{a positive integer specifying the seed used to
+split data for k-fold cross validation. By default, \code{kfoldseed=123}.}
 
 \item{verbose}{logical. If \code{verbose=TRUE}, print out the inference steps. By default, \code{verbose=FALSE}.}
 }
 \value{
 \code{do_cv_direct} returns a list of the out-of-sample variance explained in each of the test set,
-and the features selected in each of the 10 training sets.
+and the features selected in each of the k training sets.
 }
 \description{
-Direct 10-fold cross-validation used to compute the out-of-sample variance explained by selected features from HTRX.
+Direct k-fold cross-validation used to compute the out-of-sample variance explained by selected features from HTRX.
 It can be applied to select haplotypes based on HTR, or select single nucleotide polymorphisms (SNPs).
 }
 \details{
-Function \code{do_cv_direct} directly performs 10-fold cross-validation: features are
+Function \code{do_cv_direct} directly performs k-fold cross-validation: features are
 selected from the training set using a specified \code{criteria},
 and the out-of-sample variance explained by the selected features are computed on the test set.
 This function runs faster than \code{\link{do_cv}} with large \code{sim_times}, but may lose

@@ -20,13 +20,15 @@ do_cumulative_htrx(
   method = "simple",
   criteria = "BIC",
   gain = TRUE,
+  nmodel = 3,
   runparallel = FALSE,
   mc.cores = 6,
   rareremove = FALSE,
   rare_threshold = 0.001,
   L = 6,
   dataseed = 1:sim_times,
-  tenfoldseed = 123,
+  fold = 10,
+  kfoldseed = 123,
   returnall = FALSE,
   htronly = FALSE,
   max_int = NULL,
@@ -45,6 +47,7 @@ do_cumulative_htrx_step1(
   fixorder = NULL,
   method = "simple",
   criteria = "BIC",
+  nmodel = 3,
   splitseed = 123,
   gain = TRUE,
   runparallel = FALSE,
@@ -120,6 +123,9 @@ i.e. users can specify the order of some instead of all of the SNPs.}
 \item{gain}{logical. If \code{gain=TRUE} (default), report the variance explained in addition to fixed covariates;
 otherwise, report the total variance explained by all the variables.}
 
+\item{nmodel}{a positive integer specifying the number of candidate models
+that the criterion selects. By default, \code{nmodel=3}.}
+
 \item{runparallel}{logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
 Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).}
 
@@ -139,13 +145,16 @@ By default, \code{L=6}. Let nsnp be the number of SNPs in total, \code{L} must b
 The length of \code{dataseed} must be the same as \code{sim_times}.
 By default, \code{dataseed=1:sim_times}.}
 
-\item{tenfoldseed}{a positive integer specifying the seed used to
-split data for 10-fold cross validation. By default, \code{tenfoldseed=123}.}
+\item{fold}{a positive integer specifying how many folds
+the data should be split into for cross-validation.}
+
+\item{kfoldseed}{a positive integer specifying the seed used to
+split data for k-fold cross validation. By default, \code{kfoldseed=123}.}
 
 \item{returnall}{logical. If \code{returnall=TRUE}, return all the candidate models and
-the variance explained in each of 10 test set for these the candidate models.
+the variance explained in each of k test set for these the candidate models.
 If \code{returnall=FALSE} (default), only return the best candidate model
-and the variance explained in each of 10 test set by this model.}
+and the variance explained in each of k test set by this model.}
 
 \item{htronly}{logical. If \code{htronly=TRUE}, only haplotypes with interaction
 between all the SNPs will be selected. Please set \code{max_int=NULL} when \code{htronly=TRUE}.
@@ -226,12 +235,12 @@ to directly select the best s models to enter the candidate model pool;
 (4) repeat (1)-(3) B times, and select all the different models
 in the candidate model pool as the candidate models.
 
-Step 2: select the best model using 10-fold cross-validation.
+Step 2: select the best model using k-fold cross-validation.
 
-(1) Randomly split the whole data into 10 groups with approximately equal sizes,
+(1) Randomly split the whole data into k groups with approximately equal sizes,
 using stratified sampling when the outcome is binary;
 
-(2) In each of the 10 folds, use a different group as the test dataset,
+(2) In each of the k folds, use a different group as the test dataset,
 and take the remaining groups as the training dataset.
 Then, fit all the candidate models on the training dataset,
 and use these fitted models to compute the additional variance explained by features

@@ -1,5 +1,5 @@
-#' @title Direct HTRX: 10-fold cross-validation on short haplotypes
-#' @description Direct 10-fold cross-validation used to compute the out-of-sample variance explained by selected features from HTRX.
+#' @title Direct HTRX: k-fold cross-validation on short haplotypes
+#' @description Direct k-fold cross-validation used to compute the out-of-sample variance explained by selected features from HTRX.
 #' It can be applied to select haplotypes based on HTR, or select single nucleotide polymorphisms (SNPs).
 #' @name do_cv_direct
 #'
@@ -23,11 +23,13 @@
 #' @param mc.cores an integer giving the number of cores used for parallel programming.
 #' By default, \code{mc.cores=6}.
 #' This only works when \code{runparallel=TRUE}.
-#' @param tenfoldseed a positive integer specifying the seed used to
-#' split data for 10-fold cross validation. By default, \code{tenfoldseed=123}.
+#' @param fold a positive integer specifying how many folds
+#' the data should be split into for cross-validation.
+#' @param kfoldseed a positive integer specifying the seed used to
+#' split data for k-fold cross validation. By default, \code{kfoldseed=123}.
 #' @param verbose logical. If \code{verbose=TRUE}, print out the inference steps. By default, \code{verbose=FALSE}.
 #'
-#' @details Function \code{do_cv_direct} directly performs 10-fold cross-validation: features are
+#' @details Function \code{do_cv_direct} directly performs k-fold cross-validation: features are
 #' selected from the training set using a specified \code{criteria},
 #' and the out-of-sample variance explained by the selected features are computed on the test set.
 #' This function runs faster than \code{\link{do_cv}} with large \code{sim_times}, but may lose
@@ -35,7 +37,7 @@
 #'
 #'
 #' @return \code{do_cv_direct} returns a list of the out-of-sample variance explained in each of the test set,
-#' and the features selected in each of the 10 training sets.
+#' and the features selected in each of the k training sets.
 #'
 #' @references Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
 #'
@@ -91,26 +93,26 @@ NULL
 do_cv_direct <- function(data_nosnp,featuredata,
                          featurecap=dim(featuredata)[2],usebinary=1,
                          method="simple",criteria="BIC",gain=TRUE,
-                         runparallel=FALSE,mc.cores=6,tenfoldseed=123,
+                         runparallel=FALSE,mc.cores=6,fold=10,kfoldseed=123,
                          verbose=FALSE){
 
   colnames(data_nosnp)[1]='outcome'
 
-  set.seed(tenfoldseed)
+  set.seed(kfoldseed)
 
   n_total=nrow(featuredata)
 
-  #split data into 10 folds
+  #split data into k folds
   if(method=="simple"){
-    split=tenfold_split(1:n_total)
+    split=kfold_split(data_nosnp[,"outcome"],fold=fold)
   }else if(method=="stratified"){
-    split=tenfold_split(1:n_total,strat=data_nosnp[,"outcome"],method)
+    split=kfold_split(data_nosnp[,"outcome"],fold=fold,method=method)
   }else stop("method must be either simple or stratified")
 
   features <- list()
   R2_test <- vector()
-  for(m in 1:10){
-    if(verbose) cat('10-fold cv Round', m, '\n')
+  for(m in 1:fold){
+    if(verbose) cat(fold,'- fold cv Round', m, '\n')
     test=split[[m]]
     train=(1:n_total)[-test]
 

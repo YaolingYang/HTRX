@@ -5,7 +5,7 @@
 \alias{do_cv_step1}
 \alias{infer_step1}
 \alias{infer_fixedfeatures}
-\title{HTRX: Model selection on short haplotypes}
+\title{Two-stage HTRX: Model selection on short haplotypes}
 \usage{
 do_cv(
   data_nosnp,
@@ -17,9 +17,11 @@ do_cv(
   method = "simple",
   criteria = "BIC",
   gain = TRUE,
+  nmodel = 3,
   runparallel = FALSE,
   mc.cores = 6,
-  tenfoldseed = 123,
+  fold = 10,
+  kfoldseed = 123,
   returnall = FALSE,
   returnwork = FALSE,
   verbose = FALSE
@@ -33,6 +35,7 @@ do_cv_step1(
   usebinary = 1,
   method = "simple",
   criteria = "BIC",
+  nmodel = 3,
   splitseed = 123,
   runparallel = FALSE,
   mc.cores = 6,
@@ -46,6 +49,7 @@ infer_step1(
   criteria = "BIC",
   featurecap = dim(featuredata)[2],
   usebinary = 1,
+  nmodel = nmodel,
   runparallel = FALSE,
   mc.cores = 6,
   verbose = FALSE
@@ -94,6 +98,9 @@ and use logistic regression model via \code{glm} if \code{usebinary>1}.}
 \item{gain}{logical. If \code{gain=TRUE} (default), report the variance explained in addition to fixed covariates;
 otherwise, report the total variance explained by all the variables.}
 
+\item{nmodel}{a positive integer specifying the number of candidate models
+that the criterion selects. By default, \code{nmodel=3}.}
+
 \item{runparallel}{logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
 Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).}
 
@@ -101,13 +108,16 @@ Note that for Windows users, \code{mclapply} doesn't work, so please set \code{r
 By default, \code{mc.cores=6}.
 This only works when \code{runparallel=TRUE}.}
 
-\item{tenfoldseed}{a positive integer specifying the seed used to
-split data for 10-fold cross validation. By default, \code{tenfoldseed=123}.}
+\item{fold}{a positive integer specifying how many folds
+the data should be split into for cross-validation.}
+
+\item{kfoldseed}{a positive integer specifying the seed used to
+split data for k-fold cross validation. By default, \code{kfoldseed=123}.}
 
 \item{returnall}{logical. If \code{returnall=TRUE}, return all the candidate models and
-the variance explained in each of 10 test set for these the candidate models.
+the variance explained in each of k test set for these the candidate models.
 If \code{returnall=FALSE} (default), only return the best candidate model
-and the variance explained in each of 10 test set by this model.}
+and the variance explained in each of k test set by this model.}
 
 \item{returnwork}{logical. If \code{returnwork=TRUE}, return a vector of the maximum number
 of features that are assessed in each simulation, excluding the fixed covariates.
@@ -173,12 +183,12 @@ to directly select the best s models to enter the candidate model pool;
 (3) repeat (1)-(2) B times, and select all the different models in the candidate model pool
  as the candidate models.
 
-Step 2: select the best model using 10-fold cross-validation.
+Step 2: select the best model using k-fold cross-validation.
 
-(1) Randomly split the whole data into 10 groups with approximately equal sizes,
+(1) Randomly split the whole data into k groups with approximately equal sizes,
 using stratified sampling when the outcome is binary;
 
-(2) In each of the 10 folds, use a different group as the test dataset,
+(2) In each of the k folds, use a different group as the test dataset,
 and take the remaining groups as the training dataset.
 Then, fit all the candidate models on the training dataset,
 and use these fitted models to compute the additional variance explained by features

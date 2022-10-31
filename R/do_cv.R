@@ -1,4 +1,4 @@
-#' @title HTRX: Model selection on short haplotypes
+#' @title Two-stage HTRX: Model selection on short haplotypes
 #' @description Two-step cross-validation used to select the best HTRX model.
 #' It can be applied to select haplotypes based on HTR, or select single nucleotide polymorphisms (SNPs).
 #' @name do_cv
@@ -23,17 +23,21 @@
 #' @param criteria the criteria for model selection, either \code{"BIC"} (default), \code{"AIC"} or \code{"lasso"}.
 #' @param gain logical. If \code{gain=TRUE} (default), report the variance explained in addition to fixed covariates;
 #' otherwise, report the total variance explained by all the variables.
+#' @param nmodel a positive integer specifying the number of candidate models
+#' that the criterion selects. By default, \code{nmodel=3}.
 #' @param runparallel logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
 #' Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).
 #' @param mc.cores an integer giving the number of cores used for parallel programming.
 #' By default, \code{mc.cores=6}.
 #' This only works when \code{runparallel=TRUE}.
-#' @param tenfoldseed a positive integer specifying the seed used to
-#' split data for 10-fold cross validation. By default, \code{tenfoldseed=123}.
+#' @param fold a positive integer specifying how many folds
+#' the data should be split into for cross-validation.
+#' @param kfoldseed a positive integer specifying the seed used to
+#' split data for k-fold cross validation. By default, \code{kfoldseed=123}.
 #' @param returnall logical. If \code{returnall=TRUE}, return all the candidate models and
-#' the variance explained in each of 10 test set for these the candidate models.
+#' the variance explained in each of k test set for these the candidate models.
 #' If \code{returnall=FALSE} (default), only return the best candidate model
-#' and the variance explained in each of 10 test set by this model.
+#' and the variance explained in each of k test set by this model.
 #' @param returnwork logical. If \code{returnwork=TRUE}, return a vector of the maximum number
 #' of features that are assessed in each simulation, excluding the fixed covariates.
 #' This is used to assess how much computational 'work' is done in Step 1(2) of HTRX (see details).
@@ -75,12 +79,12 @@
 #' (3) repeat (1)-(2) B times, and select all the different models in the candidate model pool
 #'  as the candidate models.
 #'
-#' Step 2: select the best model using 10-fold cross-validation.
+#' Step 2: select the best model using k-fold cross-validation.
 #'
-#' (1) Randomly split the whole data into 10 groups with approximately equal sizes,
+#' (1) Randomly split the whole data into k groups with approximately equal sizes,
 #' using stratified sampling when the outcome is binary;
 #'
-#' (2) In each of the 10 folds, use a different group as the test dataset,
+#' (2) In each of the k folds, use a different group as the test dataset,
 #' and take the remaining groups as the training dataset.
 #' Then, fit all the candidate models on the training dataset,
 #' and use these fitted models to compute the additional variance explained by features
@@ -169,8 +173,8 @@ NULL
 do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
                   sim_times=20,
                   featurecap=dim(featuredata)[2],usebinary=1,
-                  method="simple",criteria="BIC",gain=TRUE,
-                  runparallel=FALSE,mc.cores=6,tenfoldseed=123,
+                  method="simple",criteria="BIC",gain=TRUE,nmodel=3,
+                  runparallel=FALSE,mc.cores=6,fold=10,kfoldseed=123,
                   returnall=FALSE,returnwork=FALSE,verbose=FALSE){
 
   colnames(data_nosnp)[1]='outcome'
@@ -179,45 +183,29 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
   candidate_models=lapply(1:sim_times,function(s){
     results=do_cv_step1(data_nosnp,featuredata,train_proportion,
                         featurecap=featurecap,usebinary=usebinary,
-                        method=method,criteria=criteria,splitseed=s,
+                        method=method,criteria=criteria,nmodel=nmodel,splitseed=s,
                         runparallel=runparallel,mc.cores=mc.cores,verbose=verbose)
   })
 
   #extract all the candidate models
 
   if(criteria=="lasso"){
-    nmodel=vector()
-    for(i in 1:sim_times){
-      nmodel[i]=candidate_models[[i]]$totalmodel
-    }
-    candidate_pool=as.data.frame(matrix(NA,nrow=sum(nmodel),ncol=dim(featuredata)[2]))
+    candidate_pool=as.data.frame(matrix(NA,nrow=sim_times*nmodel,ncol=featurecap))
     k=1
     for(i in 1:sim_times){
-      for(j in 1:nmodel[i]){
+      for(j in 1:nmodel){
         selected_features=candidate_models[[i]]$model[[j]]
         candidate_pool[k,1:length(selected_features)]=selected_features
         k=k+1
       }
     }
   }else{
-    candidate_pool=as.data.frame(matrix(NA,nrow=sim_times*min(featurecap,3),ncol=featurecap))
-    #if there are only two features, in each seed of step 1 we only select two candidate models
+    candidate_pool=as.data.frame(matrix(NA,nrow=sim_times*nmodel,ncol=featurecap))
 
-    if(featurecap==2){
-      for(i in 1:sim_times){
-        selected_features1=row.names(as.data.frame(candidate_models[[i]]$model1$coefficients))[-(1:ncol(data_nosnp))]
-        selected_features2=row.names(as.data.frame(candidate_models[[i]]$model2$coefficients))[-(1:ncol(data_nosnp))]
-        candidate_pool[(2*i-1),(1:length(selected_features1))]=selected_features1
-        candidate_pool[(2*i),(1:length(selected_features2))]=selected_features2
-      }
-    }else{
-      for(i in 1:sim_times){
-        selected_features1=row.names(as.data.frame(candidate_models[[i]]$model1$coefficients))[-(1:ncol(data_nosnp))]
-        selected_features2=row.names(as.data.frame(candidate_models[[i]]$model2$coefficients))[-(1:ncol(data_nosnp))]
-        selected_features3=row.names(as.data.frame(candidate_models[[i]]$model3$coefficients))[-(1:ncol(data_nosnp))]
-        candidate_pool[(3*i-2),(1:length(selected_features1))]=selected_features1
-        candidate_pool[(3*i-1),(1:length(selected_features2))]=selected_features2
-        candidate_pool[(3*i),(1:length(selected_features3))]=selected_features3
+    for(i in 1:sim_times){
+      for(j in 1:nmodel){
+        selected_features=row.names(as.data.frame(candidate_models[[i]]$model[[j]]$coefficients))[-(1:ncol(data_nosnp))]
+        candidate_pool[(nmodel*(i-1)+j),(1:length(selected_features))]=selected_features
       }
     }
   }
@@ -235,79 +223,79 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
 
   n_total=nrow(data_nosnp)
 
-  set.seed(tenfoldseed)
+  set.seed(kfoldseed)
 
-  #split data into 10 folds
+  #split data into k folds
   if(method=="simple"){
-    split=tenfold_split(1:n_total)
+    split=kfold_split(data_nosnp[,"outcome"],fold=fold)
   }else if(method=="stratified"){
-    split=tenfold_split(1:n_total,strat=data_nosnp[,"outcome"],method)
+    split=kfold_split(data_nosnp[,"outcome"],fold=fold,method=method)
   }else stop("method must be either simple or stratified")
 
-  #start 10-fold cross-validation
+  #start k-fold cross-validation
 
-  R2_10fold=as.data.frame(matrix(NA,nrow=10,ncol=nrow(candidate_pool)))
+  R2_kfold=as.data.frame(matrix(NA,nrow=fold,ncol=nrow(candidate_pool)))
 
-  R2_10fold_average=vector()
+  R2_kfold_average=vector()
 
   for(i in 1:nrow(candidate_pool)){
     if(verbose) cat('Candidate model',i,'has feature',
                     unlist(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),'\n')
     if(runparallel){
-      R2_test_gain=parallel::mclapply(1:10,function(s){
+      R2_test_gain=parallel::mclapply(1:fold,function(s){
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
                             features=as.character(gsub('`','',candidate_pool[i,which(!is.na(candidate_pool[i,]))])),
                             usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
       },mc.cores=mc.cores)
     }else{
-      R2_test_gain=lapply(1:10,function(s){
+      R2_test_gain=lapply(1:fold,function(s){
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
                             features=as.character(gsub('`','',candidate_pool[i,which(!is.na(candidate_pool[i,]))])),
                             usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
       })
     }
-    R2_10fold[,i]=unlist(R2_test_gain)
-    R2_10fold_average[i]=mean(R2_10fold[,i])
+    R2_kfold[,i]=unlist(R2_test_gain)
+    R2_kfold_average[i]=mean(R2_kfold[,i])
     if(gain){
-      if(verbose) cat('Average gain for candidate model',i,'is',R2_10fold_average[i],'\n')
+      if(verbose) cat('Average gain for candidate model',i,'is',R2_kfold_average[i],'\n')
     }else{
       if(verbose) cat('Average total variance explained by candidate model',i,'is',
-                      R2_10fold_average[i],'\n')
+                      R2_kfold_average[i],'\n')
     }
 
   }
 
-  #select the best model based on the largest out-of-sample R^2 from 10-fold cv
-  best_candidate_index=which.max(R2_10fold_average)
+  #select the best model based on the largest out-of-sample R^2 from k-fold cv
+  best_candidate_index=which.max(R2_kfold_average)
   if(gain){
     if(verbose) cat('The best model is Model',best_candidate_index,'with average out-of-sample gain',
-                    R2_10fold_average[best_candidate_index],'\n')
+                    R2_kfold_average[best_candidate_index],'\n')
   }else{
     if(verbose) cat('The best model is Model',best_candidate_index,'which explains',
-                    R2_10fold_average[best_candidate_index],'average out-of-sample variance \n')
+                    R2_kfold_average[best_candidate_index],'average out-of-sample variance \n')
   }
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
   if(returnall){
     if(returnwork){
-      return(list(R2_test_gain_candidates=R2_10fold,
+      return(list(R2_test_gain_candidates=R2_kfold,
                   candidates=candidate_pool,
-                  R2_test_gain=R2_10fold[,best_candidate_index],
+                  R2_test_gain=R2_kfold[,best_candidate_index],
                   selected_features=selected_features,
                   work=work))
     }else{
-      return(list(R2_test_gain_candidates=R2_10fold,
+      return(list(R2_test_gain_candidates=R2_kfold,
                   candidates=candidate_pool,
-                  R2_test_gain=R2_10fold[,best_candidate_index],
+                  R2_test_gain=R2_kfold[,best_candidate_index],
                   selected_features=selected_features))
     }
   }else{
     if(returnwork){
-      return(list(R2_test_gain=R2_10fold[,best_candidate_index],
+      return(list(R2_test_gain=R2_kfold[,best_candidate_index],
                   selected_features=selected_features,
                   work=work))
     }else{
-      return(list(R2_test_gain=R2_10fold[,best_candidate_index],
+      return(list(R2_test_gain=R2_kfold[,best_candidate_index],
                   selected_features=selected_features))
     }
   }
@@ -318,7 +306,7 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
 #' @export
 do_cv_step1 <- function(data_nosnp,featuredata,train_proportion=0.5,
                         featurecap=dim(featuredata)[2],usebinary=1,
-                        method="simple",criteria="BIC",
+                        method="simple",criteria="BIC",nmodel=3,
                         splitseed=123,runparallel=FALSE,mc.cores=6,verbose=FALSE){
 
   colnames(data_nosnp)[1]='outcome'
@@ -330,13 +318,13 @@ do_cv_step1 <- function(data_nosnp,featuredata,train_proportion=0.5,
   set.seed(splitseed)
   n_total=nrow(data_nosnp)
   if(method=="simple"){
-    split=twofold_split(1:n_total,train_proportion)
+    split=twofold_split(data_nosnp[,"outcome"],train_proportion)
   }else if(method=="stratified"){
-    split=twofold_split(1:n_total,train_proportion,data_nosnp[,"outcome"],method)
+    split=twofold_split(data_nosnp[,"outcome"],train_proportion,method)
   }else stop("method must be either simple or stratified")
   res  <- infer_step1(data_nosnp,featuredata,
                       split$train,criteria=criteria,
-                      featurecap=featurecap,usebinary=usebinary,
+                      featurecap=featurecap,usebinary=usebinary,nmodel=nmodel,
                       runparallel=runparallel,mc.cores=mc.cores,verbose=verbose)
 
   return(res)
@@ -345,9 +333,8 @@ do_cv_step1 <- function(data_nosnp,featuredata,train_proportion=0.5,
 
 #' @rdname do_cv
 #' @export
-infer_step1 <- function(data_nosnp,featuredata,
-                        train,criteria="BIC",
-                        featurecap=dim(featuredata)[2],usebinary=1,
+infer_step1 <- function(data_nosnp,featuredata,train,criteria="BIC",
+                        featurecap=dim(featuredata)[2],usebinary=1,nmodel=nmodel,
                         runparallel=FALSE, mc.cores=6,verbose=FALSE) {
 
   colnames(data_nosnp)[1]='outcome'
@@ -373,25 +360,18 @@ infer_step1 <- function(data_nosnp,featuredata,
       }
     }
     modellist=unique(modellist)
-    if(length(modellist)==1){
-      if(verbose) cat('Selecting features',modellist[[1]],'\n')
-      return(list(model=list(modellist[[1]]),
-                  max_feature_sim=length(cv_lambda),
-                  totalmodel=1))
+
+    if(length(modellist)<nmodel){
+      if(verbose) cat('Selecting', length(modellist), 'different models \n')
+      modellist[(length(modellist)+1):nmodel]=modellist[length(modellist)]
+      return(list(model=modellist[1:nmodel],
+                  max_feature_sim=length(cv_lambda)))
     }
 
-    if(length(modellist)==2){
-      if(verbose) cat('Selecting features',modellist[[1]],'but we also keep another choice \n')
-      return(list(model=list(modellist[[1]],modellist[[2]]),
-                  max_feature_sim=length(cv_lambda),
-                  totalmodel=2))
-    }
-
-    if(length(modellist)>=3){
+    if(length(modellist)>=nmodel){
       if(verbose) cat('Selecting features',modellist[[1]],'but we also keep another 2 choices \n')
-      return(list(model=list(modellist[[1]],modellist[[2]],modellist[[3]]),
-                  max_feature_sim=length(cv_lambda),
-                  totalmodel=3))
+      return(list(model=modellist[1:nmodel],
+                  max_feature_sim=length(cv_lambda)))
     }
 
   }else{
@@ -456,8 +436,8 @@ infer_step1 <- function(data_nosnp,featuredata,
       if(verbose) cat('... Using feature',minseq[i],colnames(featuredata)[minseq[i]],'\n')
 
       #keep three different models to increase the models in the candidate model pool
-      if(i>=3){
-        if(information_each[i-1]>information_each[i-2]){
+      if(i>=nmodel){
+        if(information_each[i-(nmodel-2)]>information_each[i-(nmodel-1)]){
           max_feature_sim <- i
           break;
         }
@@ -467,24 +447,21 @@ infer_step1 <- function(data_nosnp,featuredata,
     #choose the model with the top 3 smallest BIC
 
     #If there are only 2-3 features, we don't have so many models
-    if(featurecap==2){
-      n_feature = order(information_each,decreasing=FALSE)[1:2]
+    if(featurecap<nmodel){
+      n_feature = order(information_each,decreasing=FALSE)[1:featurecap]
 
-      if(verbose) cat(criteria, 'selects',n_feature[1],'features but we also keep models with',
-                      n_feature[2],'features \n')
+      if(verbose) cat(criteria, 'selects',featurecap,'different models \n')
 
-      return(list(model1=modellist[[n_feature[1]]],
-                  model2=modellist[[n_feature[2]]],
+      modellist[(length(modellist)+1):nmodel]=modellist[length(modellist)]
+
+      return(list(model=modellist[n_feature[1:nmodel]],
                   max_feature_sim=max_feature_sim))
     }else{
-      n_feature = order(information_each,decreasing=FALSE)[1:3]
+      n_feature = order(information_each,decreasing=FALSE)[1:nmodel]
 
-      if(verbose) cat(criteria, 'selects',n_feature[1],'features but we also keep models with',
-                      n_feature[2],'and',n_feature[3],'features \n')
+      if(verbose) cat(criteria, 'selects',nmodel,'different models \n')
 
-      return(list(model1=modellist[[n_feature[1]]],
-                  model2=modellist[[n_feature[2]]],
-                  model3=modellist[[n_feature[3]]],
+      return(list(model=modellist[n_feature[1:nmodel]],
                   max_feature_sim=max_feature_sim))
     }
   }

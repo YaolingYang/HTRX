@@ -31,6 +31,8 @@
 #' @param criteria the criteria for model selection, either \code{"BIC"} (default), \code{"AIC"} or \code{"lasso"}.
 #' @param gain logical. If \code{gain=TRUE} (default), report the variance explained in addition to fixed covariates;
 #' otherwise, report the total variance explained by all the variables.
+#' @param nmodel a positive integer specifying the number of candidate models
+#' that the criterion selects. By default, \code{nmodel=3}.
 #' @param runparallel logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
 #' Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).
 #' @param mc.cores an integer giving the number of cores used for parallel programming.
@@ -44,12 +46,14 @@
 #' @param dataseed a vector of the seed that each simulation in Step 1 (see details) uses.
 #' The length of \code{dataseed} must be the same as \code{sim_times}.
 #' By default, \code{dataseed=1:sim_times}.
-#' @param tenfoldseed a positive integer specifying the seed used to
-#' split data for 10-fold cross validation. By default, \code{tenfoldseed=123}.
+#' @param fold a positive integer specifying how many folds
+#' the data should be split into for cross-validation.
+#' @param kfoldseed a positive integer specifying the seed used to
+#' split data for k-fold cross validation. By default, \code{kfoldseed=123}.
 #' @param returnall logical. If \code{returnall=TRUE}, return all the candidate models and
-#' the variance explained in each of 10 test set for these the candidate models.
+#' the variance explained in each of k test set for these the candidate models.
 #' If \code{returnall=FALSE} (default), only return the best candidate model
-#' and the variance explained in each of 10 test set by this model.
+#' and the variance explained in each of k test set by this model.
 #' @param htronly logical. If \code{htronly=TRUE}, only haplotypes with interaction
 #' between all the SNPs will be selected. Please set \code{max_int=NULL} when \code{htronly=TRUE}.
 #' By default, \code{htronly=FALSE}.
@@ -105,12 +109,12 @@
 #' (4) repeat (1)-(3) B times, and select all the different models
 #' in the candidate model pool as the candidate models.
 #'
-#' Step 2: select the best model using 10-fold cross-validation.
+#' Step 2: select the best model using k-fold cross-validation.
 #'
-#' (1) Randomly split the whole data into 10 groups with approximately equal sizes,
+#' (1) Randomly split the whole data into k groups with approximately equal sizes,
 #' using stratified sampling when the outcome is binary;
 #'
-#' (2) In each of the 10 folds, use a different group as the test dataset,
+#' (2) In each of the k folds, use a different group as the test dataset,
 #' and take the remaining groups as the training dataset.
 #' Then, fit all the candidate models on the training dataset,
 #' and use these fitted models to compute the additional variance explained by features
@@ -189,10 +193,10 @@ NULL
 do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
                                sim_times=10,
                                featurecap=40,usebinary=1,randomorder=TRUE,fixorder=NULL,
-                               method="simple",criteria="BIC",gain=TRUE,
+                               method="simple",criteria="BIC",gain=TRUE,nmodel=3,
                                runparallel=FALSE,mc.cores=6,rareremove=FALSE,
                                rare_threshold=0.001,L=6,
-                               dataseed=1:sim_times,tenfoldseed=123,
+                               dataseed=1:sim_times,fold=10,kfoldseed=123,
                                returnall=FALSE,htronly=FALSE,max_int=NULL,
                                returnwork=FALSE,verbose=FALSE){
 
@@ -204,45 +208,30 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
     results=do_cumulative_htrx_step1(data_nosnp,hap1,hap2,train_proportion,
                                      featurecap=featurecap,usebinary=usebinary,
                                      fixorder=fixorder,
-                                     method=method,criteria=criteria,splitseed=s,
+                                     method=method,criteria=criteria,
+                                     nmodel=nmodel,splitseed=s,
                                      runparallel=runparallel,
                                      rareremove=rareremove,rare_threshold=rare_threshold,
                                      L=L,htronly=htronly,max_int=max_int,verbose=verbose)
   })
 
   if(criteria=="lasso"){
-    nmodel=vector()
-    for(i in 1:sim_times){
-      nmodel[i]=candidate_models[[i]]$totalmodel
-    }
-    candidate_pool=as.data.frame(matrix(NA,nrow=sum(nmodel),ncol=featurecap))
+    candidate_pool=as.data.frame(matrix(NA,nrow=sim_times*nmodel,ncol=featurecap))
     k=1
     for(i in 1:sim_times){
-      for(j in 1:nmodel[i]){
+      for(j in 1:nmodel){
         selected_features=candidate_models[[i]]$model[[j]]
         candidate_pool[k,1:length(selected_features)]=selected_features
         k=k+1
       }
     }
   }else{
-    candidate_pool=as.data.frame(matrix(NA,nrow=sim_times*min(featurecap,3),ncol=featurecap))
-    #if there are only two features, in each seed of step 1 we only select two candidate models
+    candidate_pool=as.data.frame(matrix(NA,nrow=sim_times*nmodel,ncol=featurecap))
 
-    if(featurecap==2){
-      for(i in 1:sim_times){
-        selected_features1=row.names(as.data.frame(candidate_models[[i]]$model1$coefficients))[-(1:ncol(data_nosnp))]
-        selected_features2=row.names(as.data.frame(candidate_models[[i]]$model2$coefficients))[-(1:ncol(data_nosnp))]
-        candidate_pool[(2*i-1),(1:length(selected_features1))]=selected_features1
-        candidate_pool[(2*i),(1:length(selected_features2))]=selected_features2
-      }
-    }else{
-      for(i in 1:sim_times){
-        selected_features1=row.names(as.data.frame(candidate_models[[i]]$model1$coefficients))[-(1:ncol(data_nosnp))]
-        selected_features2=row.names(as.data.frame(candidate_models[[i]]$model2$coefficients))[-(1:ncol(data_nosnp))]
-        selected_features3=row.names(as.data.frame(candidate_models[[i]]$model3$coefficients))[-(1:ncol(data_nosnp))]
-        candidate_pool[(3*i-2),(1:length(selected_features1))]=selected_features1
-        candidate_pool[(3*i-1),(1:length(selected_features2))]=selected_features2
-        candidate_pool[(3*i),(1:length(selected_features3))]=selected_features3
+    for(i in 1:sim_times){
+      for(j in 1:nmodel){
+        selected_features=row.names(as.data.frame(candidate_models[[i]]$model[[j]]$coefficients))[-(1:ncol(data_nosnp))]
+        candidate_pool[(nmodel*(i-1)+j),(1:length(selected_features))]=selected_features
       }
     }
   }
@@ -258,24 +247,25 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
     }
   }
 
-  set.seed(tenfoldseed)
+  set.seed(kfoldseed)
 
-  #start 10-fold cross-validation
+  #start k-fold cross-validation
 
+  #split data into k folds
   if(method=="simple"){
-    split=tenfold_split(1:n_total)
+    split=kfold_split(data_nosnp[,"outcome"],fold=fold)
   }else if(method=="stratified"){
-    split=tenfold_split(1:n_total,data_nosnp[,"outcome"],method)
+    split=kfold_split(data_nosnp[,"outcome"],fold=fold,method=method)
   }else stop("method must be either simple or stratified")
 
-  R2_10fold=as.data.frame(matrix(NA,nrow=10,ncol=nrow(candidate_pool)))
+  R2_kfold=as.data.frame(matrix(NA,nrow=fold,ncol=nrow(candidate_pool)))
 
-  R2_10fold_average=vector()
+  R2_kfold_average=vector()
 
   for(i in 1:nrow(candidate_pool)){
     if(verbose) cat('Candidate model',i,'has feature',unlist(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),'\n')
     if(runparallel){
-      R2_test_gain=parallel::mclapply(1:10,function(s){
+      R2_test_gain=parallel::mclapply(1:fold,function(s){
         featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
                               fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
@@ -283,7 +273,7 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
                             usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
       },mc.cores=mc.cores)
     }else{
-      R2_test_gain=lapply(1:10,function(s){
+      R2_test_gain=lapply(1:fold,function(s){
         featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
                               fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
         infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
@@ -291,46 +281,46 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
                             usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
       })
     }
-    R2_10fold[,i]=unlist(R2_test_gain)
-    R2_10fold_average[i]=mean(R2_10fold[,i])
+    R2_kfold[,i]=unlist(R2_test_gain)
+    R2_kfold_average[i]=mean(R2_kfold[,i])
     if(gain){
-      if(verbose) cat('Average gain for candidate model',i,'is',R2_10fold_average[i],'\n')
+      if(verbose) cat('Average gain for candidate model',i,'is',R2_kfold_average[i],'\n')
     }else{
-      if(verbose) cat('Average total variance explained by candidate model',i,'is',R2_10fold_average[i],'\n')
+      if(verbose) cat('Average total variance explained by candidate model',i,'is',R2_kfold_average[i],'\n')
     }
   }
-  #select the best model based on the largest out-of-sample R^2 from 10-fold cv
-  best_candidate_index=which.max(R2_10fold_average)
+  #select the best model based on the largest out-of-sample R^2 from k-fold cv
+  best_candidate_index=which.max(R2_kfold_average)
   if(gain){
     if(verbose)  cat('The best model is Model',best_candidate_index,
-                     'with average gain',R2_10fold_average[best_candidate_index],'\n')
+                     'with average gain',R2_kfold_average[best_candidate_index],'\n')
   }else{
     if(verbose) cat('The best model is Model',best_candidate_index,
-                    'which explains',R2_10fold_average[best_candidate_index],'average total variance \n')
+                    'which explains',R2_kfold_average[best_candidate_index],'average total variance \n')
   }
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
 
   if(returnall){
     if(returnwork){
-      return(list(R2_test_gain_candidates=R2_10fold,
+      return(list(R2_test_gain_candidates=R2_kfold,
                   candidates=candidate_pool,
-                  R2_test_gain=R2_10fold[,best_candidate_index],
+                  R2_test_gain=R2_kfold[,best_candidate_index],
                   selected_features=selected_features,
                   work=work))
     }else{
-      return(list(R2_test_gain_candidates=R2_10fold,
+      return(list(R2_test_gain_candidates=R2_kfold,
                   candidates=candidate_pool,
-                  R2_test_gain=R2_10fold[,best_candidate_index],
+                  R2_test_gain=R2_kfold[,best_candidate_index],
                   selected_features=selected_features))
     }
   }else{
     if(returnwork){
-      return(list(R2_test_gain=R2_10fold[,best_candidate_index],
+      return(list(R2_test_gain=R2_kfold[,best_candidate_index],
                   selected_features=selected_features,
                   work=work))
     }else{
-      return(list(R2_test_gain=R2_10fold[,best_candidate_index],
+      return(list(R2_test_gain=R2_kfold[,best_candidate_index],
                   selected_features=selected_features))
     }
   }
@@ -341,7 +331,7 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
 #' @export
 do_cumulative_htrx_step1 <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
                                      featurecap=40,usebinary=1,randomorder=TRUE,fixorder=NULL,
-                                     method="simple",criteria="BIC",
+                                     method="simple",criteria="BIC",nmodel=3,
                                      splitseed=123,gain=TRUE,runparallel=FALSE,
                                      mc.cores=6,rareremove=FALSE,rare_threshold=0.001,L=6,
                                      htronly=FALSE,max_int=NULL,verbose=FALSE){
@@ -368,9 +358,9 @@ do_cumulative_htrx_step1 <- function(data_nosnp,hap1,hap2=hap1,train_proportion=
   hap2=hap2[,snp_random]
 
   if(method=="simple"){
-    split=twofold_split(1:n_total,train_proportion)
+    split=twofold_split(data_nosnp[,"outcome"],train_proportion)
   }else if(method=="stratified"){
-    split=twofold_split(1:n_total,train_proportion,data_nosnp[,"outcome"],method)
+    split=twofold_split(data_nosnp[,"outcome"],train_proportion,method)
   }else stop("method must be either simple or stratified")
 
 
@@ -415,7 +405,7 @@ do_cumulative_htrx_step1 <- function(data_nosnp,hap1,hap2=hap1,train_proportion=
         #The first step is to select candidate models
         res  <- infer_step1(data_nosnp,htrx,
                             split$train,criteria=criteria,
-                            featurecap=featurecap,usebinary=usebinary,
+                            featurecap=featurecap,usebinary=usebinary,nmodel=nmodel,
                             runparallel=runparallel,mc.cores=mc.cores,verbose=verbose)
 
       }
