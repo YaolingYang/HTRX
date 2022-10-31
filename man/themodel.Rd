@@ -12,11 +12,12 @@ themodel(formula, data, usebinary = 1, clean = TRUE)
 \item{data}{a data frame contains all the variables included in the formula.}
 
 \item{usebinary}{a non-negative number representing different models.
-Use linear model if usebinary=0, use logistic regression model via fastglm if usebinary=1 (by default),
-and use logistic regression model via glm if usebinary>1.}
+Use linear model if \code{usebinary=0},
+use logistic regression model via \code{fastglm} if \code{usebinary=1} (by default),
+and use logistic regression model via \code{glm} if \code{usebinary>1}.}
 
-\item{clean}{logical. If clean=TRUE (by default), remove additional storages that
-the "predict", "AIC", "BIC" methods do not need.}
+\item{clean}{logical. If \code{clean=TRUE} (by default), remove additional storages that
+the \code{predict} function, \code{"AIC"} and \code{"BIC"} criteria do not need.}
 }
 \value{
 a fitted model.
@@ -25,7 +26,8 @@ a fitted model.
 Model-agnostic functions for model fitting (both linear and generalized linear models).
 }
 \details{
-\code{\link{fastglm}} is from \code{\link{fastglm}} package, which is much faster than \code{\link{glm}}.
+This function returns a fitted model (either linear model or logistic regression model).
+For logistic regression, we use function \code{fastglm} from \code{fastglm} package, which is much faster than \code{glm}.
 }
 \examples{
 ## create the dataset for variables and outcome

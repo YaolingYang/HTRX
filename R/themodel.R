@@ -4,13 +4,15 @@
 #' @param formula a formula for model-fitting.
 #' @param data a data frame contains all the variables included in the formula.
 #' @param usebinary a non-negative number representing different models.
-#' Use linear model if usebinary=0, use logistic regression model via fastglm if usebinary=1 (by default),
-#' and use logistic regression model via glm if usebinary>1.
-#' @param clean logical. If clean=TRUE (by default), remove additional storages that
-#' the "predict", "AIC", "BIC" methods do not need.
+#' Use linear model if \code{usebinary=0},
+#' use logistic regression model via \code{fastglm} if \code{usebinary=1} (by default),
+#' and use logistic regression model via \code{glm} if \code{usebinary>1}.
+#' @param clean logical. If \code{clean=TRUE} (by default), remove additional storages that
+#' the \code{predict} function, \code{"AIC"} and \code{"BIC"} criteria do not need.
 #'
 #' @return a fitted model.
-#' @details \code{\link{fastglm}} is from \code{\link{fastglm}} package, which is much faster than \code{\link{glm}}.
+#' @details This function returns a fitted model (either linear model or logistic regression model).
+#' For logistic regression, we use function \code{fastglm} from \code{fastglm} package, which is much faster than \code{glm}.
 #'
 #' @rdname themodel
 #' @examples

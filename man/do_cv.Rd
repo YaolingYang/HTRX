@@ -5,7 +5,7 @@
 \alias{do_cv_step1}
 \alias{infer_step1}
 \alias{infer_fixedfeatures}
-\title{HTRX Model selection on short haplotypes}
+\title{HTRX: Model selection on short haplotypes}
 \usage{
 do_cv(
   data_nosnp,
@@ -65,56 +65,56 @@ infer_fixedfeatures(
 )
 }
 \arguments{
-\item{data_nosnp}{a data frame with outcome (the outcome must be the first column)
- and fixed covariates (for example, sex, age and the first 18 PCs)
+\item{data_nosnp}{a data frame with outcome (the outcome must be the first column),
+fixed covariates (for example, sex, age and the first 18 PCs) if there are,
 and without SNPs or haplotypes.}
 
 \item{featuredata}{a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
-These features exclude all the data in data_nosnp, and will be selected using 2-step cross-validation.}
+These features exclude all the data in \code{data_nosnp}, and will be selected using 2-step cross-validation.}
 
 \item{train_proportion}{a positive number between 0 and 1 giving
 the proportion of the training dataset when splitting data into 2 folds.
-By default, train_proportion=0.5.}
+By default, \code{train_proportion=0.5}.}
 
-\item{sim_times}{an integer giving the number of simulations in step 1 (see details).
-By default, sim_times=20.}
+\item{sim_times}{an integer giving the number of simulations in Step 1 (see details).
+By default, \code{sim_times=20}.}
 
 \item{featurecap}{a positive integer which manually sets the maximum number of independent features.
-By default, featurecap=40.}
+By default, \code{featurecap=40}.}
 
 \item{usebinary}{a non-negative number representing different models.
-Use linear model if usebinary=0,
-use logistic regression model via fastglm if usebinary=1 (by default),
-and use logistic regression model via glm if usebinary>1.}
+Use linear model if \code{usebinary=0},
+use logistic regression model via \code{fastglm} if \code{usebinary=1} (by default),
+and use logistic regression model via \code{glm} if \code{usebinary>1}.}
 
-\item{method}{the method used for data splitting, either "simple" (default) or "stratified".}
+\item{method}{the method used for data splitting, either \code{"simple"} (default) or \code{"stratified"}.}
 
-\item{criteria}{the information criteria for model selection, either "BIC" (default) or "AIC".}
+\item{criteria}{the criteria for model selection, either \code{"BIC"} (default), \code{"AIC"} or \code{"lasso"}.}
 
-\item{gain}{logical. If gain=TRUE (default), report the variance explained in addition to fixed covariates;
+\item{gain}{logical. If \code{gain=TRUE} (default), report the variance explained in addition to fixed covariates;
 otherwise, report the total variance explained by all the variables.}
 
-\item{runparallel}{logical. Use parallel programming based on "mclapply" function or not.
-Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE (default).}
+\item{runparallel}{logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
+Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).}
 
 \item{mc.cores}{an integer giving the number of cores used for parallel programming.
-By default, mc.cores=6.
-This only works when runparallel=TRUE.}
+By default, \code{mc.cores=6}.
+This only works when \code{runparallel=TRUE}.}
 
 \item{tenfoldseed}{a positive integer specifying the seed used to
-split data for 10-fold cross validation. By default, tenfoldseed=123.}
+split data for 10-fold cross validation. By default, \code{tenfoldseed=123}.}
 
-\item{returnall}{logical. If returnall=TRUE, return all the candidate models and
+\item{returnall}{logical. If \code{returnall=TRUE}, return all the candidate models and
 the variance explained in each of 10 test set for these the candidate models.
-If returnall=FALSE (default), only return the best candidate model
+If \code{returnall=FALSE} (default), only return the best candidate model
 and the variance explained in each of 10 test set by this model.}
 
-\item{returnwork}{logical. If returnwork=TRUE, return a vector of the maximum number
+\item{returnwork}{logical. If \code{returnwork=TRUE}, return a vector of the maximum number
 of features that are assessed in each simulation, excluding the fixed covariates.
-This is used to assess how much computational 'work' is done in step 1(2) of HTRX (see details).
-By default, returnwork=FALSE.}
+This is used to assess how much computational 'work' is done in Step 1(2) of HTRX (see details).
+By default, \code{returnwork=FALSE}.}
 
-\item{verbose}{logical. If verbose=TRUE, print out the inference steps. By default, verbose=FALSE.}
+\item{verbose}{logical. If \code{verbose=TRUE}, print out the inference steps. By default, \code{verbose=FALSE}.}
 
 \item{splitseed}{a positive integer giving the seed of data split.}
 
@@ -125,20 +125,20 @@ By default, returnwork=FALSE.}
 \item{features}{a character of the names of the fixed features, excluding the intercept.}
 
 \item{coefficients}{a vector giving the coefficients of the fixed features, including the intercept.
-If the fixed features don't have fixed coefficients, set coefficients=NULL (default).}
+If the fixed features don't have fixed coefficients, set \code{coefficients=NULL} (default).}
 
-\item{R2only}{logical. If R2only=TRUE, function infer_fixedfeatures only
+\item{R2only}{logical. If \code{R2only=TRUE}, function \code{infer_fixedfeatures} only
 returns the variance explained in the test data.
-By default, R2only=FALSE.}
+By default, \code{R2only=FALSE}.}
 }
 \value{
-\code{\link{do_cv}} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
-If returnall=TRUE, this function also returns all the candidate models,
+\code{do_cv} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
+If \code{returnall=TRUE}, this function also returns all the candidate models,
 and the out-of-sample variance explained in each test set by each candidate model.
 
-\code{\link{do_cv_step1}} and \code{\link{infer_step1}} return a list of three candidate models selected by a single simulation.
+\code{do_cv_step1} and \code{infer_step1} return a list of three candidate models selected by a single simulation.
 
-\code{\link{infer_fixedfeatures}} returns a list of the variance explained in the test set if R2only=TRUE,
+\code{infer_fixedfeatures} returns a list of the variance explained in the test set if \code{R2only=TRUE},
 otherwise, it returns a list of the variance explained in the test set, the model including all the variables,
 and the null model, i.e. the model with outcome and fixed covariates only.
 }
@@ -147,8 +147,8 @@ Two-step cross-validation used to select the best HTRX model.
 It can be applied to select haplotypes based on HTR, or select single nucleotide polymorphisms (SNPs).
 }
 \details{
-Function \code{\link{do_cv}} is the main function used for selecting haplotypes from HTRX or SNPs.
-It is a two-step issued and is used for alleviate overfitting.
+Function \code{do_cv} is the main function used for selecting haplotypes from HTRX or SNPs.
+It is a two-step algorithm and is used for alleviating overfitting.
 
 Step 1: select candidate models. This is to address the model search problem,
 and is chosen to obtain a set of models more diverse than
@@ -159,12 +159,16 @@ Specifically, when the outcome is binary,
 stratified sampling is used to ensure the subset has approximately
 the same proportion of cases and controls as the whole data;
 
-(2) Start from a model with fixed covariates (e.g. 18 PCs, sex and age),
+(2) If \code{criteria="AIC"} or \code{criteria="BIC"},
+start from a model with fixed covariates (e.g. 18 PCs, sex and age),
 and perform forward regression on the subset,
 i.e. iteratively choose a feature (in addition to the fixed covariates)
 to add whose inclusion enables the model to explain the largest variance,
-and select s models with the lowest Bayesian Information Criteria (BIC)
+and select s models with the lowest Akaike information criterion (AIC) or
+Bayesian Information Criteria (BIC)
 to enter the candidate model pool;
+If \code{criteria="lasso"}, using least absolute shrinkage and selection operator (lasso)
+to directly select the best s models to enter the candidate model pool;
 
 (3) repeat (1)-(2) B times, and select all the different models in the candidate model pool
  as the candidate models.
@@ -178,15 +182,15 @@ using stratified sampling when the outcome is binary;
 and take the remaining groups as the training dataset.
 Then, fit all the candidate models on the training dataset,
 and use these fitted models to compute the additional variance explained by features
-(out-of-sample R2) in the test dataset.
+(out-of-sample variance explained) in the test dataset.
 Finally, select the candidate model with the biggest
-average out-of-sample R2 as the best model.
+average out-of-sample variance explained as the best model.
 
-Function \code{\link{do_cv_step1}} is the Step 1 (1)-(2) described above.
-Function \code{\link{infer_step1}} is the Step 1 (2) described above.
-Function \code{\link{infer_fixedfeatures}} is used to fit all the candidate models on the training dataset,
+Function \code{do_cv_step1} is the Step 1 (1)-(2) described above.
+Function \code{infer_step1} is the Step 1 (2) described above.
+Function \code{infer_fixedfeatures} is used to fit all the candidate models on the training dataset,
 and compute the additional variance explained by features (out-of-sample R2) in the test dataset,
-as described in the Step 2 (2) bove.
+as described in the Step 2 (2) above.
 }
 \examples{
 ## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
@@ -219,8 +223,6 @@ htrx_results <- do_cv(HTRX::example_data_nosnp[1:300,1:2],
                       sim_times=1,featurecap=4,usebinary=1,
                       method="simple",criteria="BIC",
                       gain=TRUE,runparallel=FALSE,verbose=TRUE)
-## If we want to compute the total variance explained
-## we can set gain=FALSE in the above example
 
 ## Below is an example with a large sample size and simulations
 \donttest{
@@ -243,4 +245,10 @@ Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis origi
 Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
 
 Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
+
+McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
+
+Akaike, Hirotogu. "Information theory and an extension of the maximum likelihood principle." Selected papers of hirotugu akaike. Springer, New York, NY, 199-213 (1998).
+
+Tibshirani, R. Regression shrinkage and selection via the lasso. Journal of the Royal Statistical Society: Series B (Methodological), 58(1), 267-288 (1996).
 }

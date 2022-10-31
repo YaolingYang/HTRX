@@ -24,15 +24,15 @@ make_snp(hap1, hap2 = hap1, rareremove = FALSE, rare_threshold = 0.001)
 
 \item{hap2}{a data frame of the SNPs' genotype of the second genome.
 The genotype of a SNP for each individual is either 0 (reference allele) or 1 (alternative allele).
-By default, hap2=hap1 representing haploid data. If hap2 is different from hap1, the data is diploid.}
+By default, \code{hap2=hap1} representing haploid.}
 
-\item{rareremove}{logical. Remove rare SNPs and haplotypes or not. By default, rareremove=FALSE.}
+\item{rareremove}{logical. Remove rare SNPs and haplotypes or not. By default, \code{rareremove=FALSE}.}
 
 \item{rare_threshold}{a numeric number below which the haplotype or SNP is removed.
-This only works when rareremove=TRUE. By default, rare_threshold=0.001.}
+This only works when \code{rareremove=TRUE}. By default, \code{rare_threshold=0.001}.}
 
 \item{fixedfeature}{a character consisted of the names of haplotypes.
-This parameter can be "NULL" (by default) if all the haplotypes are used as variables.}
+This parameter can be \code{NULL} (by default) if all the haplotypes are used as variables.}
 
 \item{max_int}{a positive integer which specifies the maximum number of SNPs that can interact.
 If no value is given, interactions between all the SNPs will be considered.}
@@ -41,15 +41,15 @@ If no value is given, interactions between all the SNPs will be considered.}
 a data frame of the feature data (either for SNPs, HTR or HTRX).
 }
 \description{
-Generate the feature data, either the genotype data for single nucleotide polymorphisms (SNPs) (\code{\link{make_snp}}),
-the feature data for Haplotype Trend Regression (HTR) (\code{\link{make_htr}}), or
-the feature data for Haplotype Trend Regression with eXtra flexibility (HTRX) (\code{\link{make_htrx}}).
+Generate the feature data, either the genotype data for single nucleotide polymorphisms (SNPs) (\code{make_snp}),
+the feature data for Haplotype Trend Regression (HTR) (\code{make_htr}), or
+the feature data for Haplotype Trend Regression with eXtra flexibility (HTRX) (\code{make_htrx}).
 }
 \details{
 If there are n SNPs, there are \ifelse{html}{\out{2<sup>n</sup>}}{\eqn{2^n}} different haplotypes created by HTR,
 and \ifelse{html}{\out{3<sup>n</sup>}}{\eqn{3^n}}-1 different haplotypes created by HTRX.
 
-When the data is haploid, please use the default setting hap2=hap1.
+When the data is haploid, please use the default setting \code{hap2=hap1}.
 }
 \examples{
 ## create SNP data for both genomes (diploid data)

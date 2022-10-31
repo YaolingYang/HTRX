@@ -3,14 +3,14 @@
 \name{computeR2}
 \alias{computeR2}
 \alias{mypredict}
-\title{Compute \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}}
+\title{Compute variance explained by models}
 \usage{
 mypredict(model, newdata)
 
 computeR2(pred, outcome, usebinary = 1)
 }
 \arguments{
-\item{model}{a fitted model, which is the output of \code{\link{themodel}}.}
+\item{model}{a fitted model, which is the output of \code{themodel}.}
 
 \item{newdata}{a data frame which contains all the variables included in the model.
 This data frame is used to make prediction on.}
@@ -20,14 +20,14 @@ This data frame is used to make prediction on.}
 \item{outcome}{a vector of the actual outcome.}
 
 \item{usebinary}{a non-negative number representing different models.
-Use linear model if usebinary=0,
-use logistic regression model via fastglm if usebinary=1 (by default),
-and use logistic regression model via glm if usebinary>1.}
+Use linear model if \code{usebinary=0},
+use logistic regression model via \code{fastglm} if \code{usebinary=1} (by default),
+and use logistic regression model via \code{glm} if \code{usebinary>1}.}
 }
 \value{
-\code{\link{mypredict}} returns a vector of the predicted outcome.
+\code{mypredict} returns a vector of the predicted outcome.
 
-\code{\link{computeR2}} returns a positive number of the variance explained by the
+\code{computeR2} returns a positive number of the variance explained by the
 linear model (conventional \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}) or
 the generalized linear model (McFadden's \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}).
 }

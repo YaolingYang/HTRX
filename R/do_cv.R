@@ -1,56 +1,56 @@
-#' @title HTRX Model selection on short haplotypes
+#' @title HTRX: Model selection on short haplotypes
 #' @description Two-step cross-validation used to select the best HTRX model.
 #' It can be applied to select haplotypes based on HTR, or select single nucleotide polymorphisms (SNPs).
 #' @name do_cv
 #'
-#' @param data_nosnp a data frame with outcome (the outcome must be the first column)
-#'  and fixed covariates (for example, sex, age and the first 18 PCs)
+#' @param data_nosnp a data frame with outcome (the outcome must be the first column),
+#' fixed covariates (for example, sex, age and the first 18 PCs) if there are,
 #' and without SNPs or haplotypes.
 #' @param featuredata a data frame of the feature data, e.g. haplotype data created by HTRX or SNPs.
-#' These features exclude all the data in data_nosnp, and will be selected using 2-step cross-validation.
+#' These features exclude all the data in \code{data_nosnp}, and will be selected using 2-step cross-validation.
 #' @param train_proportion a positive number between 0 and 1 giving
 #' the proportion of the training dataset when splitting data into 2 folds.
-#' By default, train_proportion=0.5.
-#' @param sim_times an integer giving the number of simulations in step 1 (see details).
-#' By default, sim_times=20.
+#' By default, \code{train_proportion=0.5}.
+#' @param sim_times an integer giving the number of simulations in Step 1 (see details).
+#' By default, \code{sim_times=20}.
 #' @param featurecap a positive integer which manually sets the maximum number of independent features.
-#' By default, featurecap=40.
+#' By default, \code{featurecap=40}.
 #' @param usebinary a non-negative number representing different models.
-#' Use linear model if usebinary=0,
-#' use logistic regression model via fastglm if usebinary=1 (by default),
-#' and use logistic regression model via glm if usebinary>1.
-#' @param method the method used for data splitting, either "simple" (default) or "stratified".
-#' @param criteria the information criteria for model selection, either "BIC" (default) or "AIC".
-#' @param gain logical. If gain=TRUE (default), report the variance explained in addition to fixed covariates;
+#' Use linear model if \code{usebinary=0},
+#' use logistic regression model via \code{fastglm} if \code{usebinary=1} (by default),
+#' and use logistic regression model via \code{glm} if \code{usebinary>1}.
+#' @param method the method used for data splitting, either \code{"simple"} (default) or \code{"stratified"}.
+#' @param criteria the criteria for model selection, either \code{"BIC"} (default), \code{"AIC"} or \code{"lasso"}.
+#' @param gain logical. If \code{gain=TRUE} (default), report the variance explained in addition to fixed covariates;
 #' otherwise, report the total variance explained by all the variables.
-#' @param runparallel logical. Use parallel programming based on "mclapply" function or not.
-#' Note that for Windows users, "mclapply" doesn't work, so please set runparallel=FALSE (default).
+#' @param runparallel logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
+#' Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).
 #' @param mc.cores an integer giving the number of cores used for parallel programming.
-#' By default, mc.cores=6.
-#' This only works when runparallel=TRUE.
+#' By default, \code{mc.cores=6}.
+#' This only works when \code{runparallel=TRUE}.
 #' @param tenfoldseed a positive integer specifying the seed used to
-#' split data for 10-fold cross validation. By default, tenfoldseed=123.
-#' @param returnall logical. If returnall=TRUE, return all the candidate models and
+#' split data for 10-fold cross validation. By default, \code{tenfoldseed=123}.
+#' @param returnall logical. If \code{returnall=TRUE}, return all the candidate models and
 #' the variance explained in each of 10 test set for these the candidate models.
-#' If returnall=FALSE (default), only return the best candidate model
+#' If \code{returnall=FALSE} (default), only return the best candidate model
 #' and the variance explained in each of 10 test set by this model.
-#' @param returnwork logical. If returnwork=TRUE, return a vector of the maximum number
+#' @param returnwork logical. If \code{returnwork=TRUE}, return a vector of the maximum number
 #' of features that are assessed in each simulation, excluding the fixed covariates.
-#' This is used to assess how much computational 'work' is done in step 1(2) of HTRX (see details).
-#' By default, returnwork=FALSE.
-#' @param verbose logical. If verbose=TRUE, print out the inference steps. By default, verbose=FALSE.
+#' This is used to assess how much computational 'work' is done in Step 1(2) of HTRX (see details).
+#' By default, \code{returnwork=FALSE}.
+#' @param verbose logical. If \code{verbose=TRUE}, print out the inference steps. By default, \code{verbose=FALSE}.
 #' @param splitseed a positive integer giving the seed of data split.
 #' @param train a vector of the indexes of the training data.
 #' @param test a vector of the indexes of the test data.
 #' @param features a character of the names of the fixed features, excluding the intercept.
 #' @param coefficients a vector giving the coefficients of the fixed features, including the intercept.
-#' If the fixed features don't have fixed coefficients, set coefficients=NULL (default).
-#' @param R2only logical. If R2only=TRUE, function infer_fixedfeatures only
+#' If the fixed features don't have fixed coefficients, set \code{coefficients=NULL} (default).
+#' @param R2only logical. If \code{R2only=TRUE}, function \code{infer_fixedfeatures} only
 #' returns the variance explained in the test data.
-#' By default, R2only=FALSE.
+#' By default, \code{R2only=FALSE}.
 #'
-#' @details Function \code{\link{do_cv}} is the main function used for selecting haplotypes from HTRX or SNPs.
-#' It is a two-step issued and is used for alleviate overfitting.
+#' @details Function \code{do_cv} is the main function used for selecting haplotypes from HTRX or SNPs.
+#' It is a two-step algorithm and is used for alleviating overfitting.
 #'
 #' Step 1: select candidate models. This is to address the model search problem,
 #' and is chosen to obtain a set of models more diverse than
@@ -61,12 +61,16 @@
 #' stratified sampling is used to ensure the subset has approximately
 #' the same proportion of cases and controls as the whole data;
 #'
-#' (2) Start from a model with fixed covariates (e.g. 18 PCs, sex and age),
+#' (2) If \code{criteria="AIC"} or \code{criteria="BIC"},
+#' start from a model with fixed covariates (e.g. 18 PCs, sex and age),
 #' and perform forward regression on the subset,
 #' i.e. iteratively choose a feature (in addition to the fixed covariates)
 #' to add whose inclusion enables the model to explain the largest variance,
-#' and select s models with the lowest Bayesian Information Criteria (BIC)
+#' and select s models with the lowest Akaike information criterion (AIC) or
+#' Bayesian Information Criteria (BIC)
 #' to enter the candidate model pool;
+#' If \code{criteria="lasso"}, using least absolute shrinkage and selection operator (lasso)
+#' to directly select the best s models to enter the candidate model pool;
 #'
 #' (3) repeat (1)-(2) B times, and select all the different models in the candidate model pool
 #'  as the candidate models.
@@ -80,23 +84,23 @@
 #' and take the remaining groups as the training dataset.
 #' Then, fit all the candidate models on the training dataset,
 #' and use these fitted models to compute the additional variance explained by features
-#' (out-of-sample R2) in the test dataset.
+#' (out-of-sample variance explained) in the test dataset.
 #' Finally, select the candidate model with the biggest
-#' average out-of-sample R2 as the best model.
+#' average out-of-sample variance explained as the best model.
 #'
-#' Function \code{\link{do_cv_step1}} is the Step 1 (1)-(2) described above.
-#' Function \code{\link{infer_step1}} is the Step 1 (2) described above.
-#' Function \code{\link{infer_fixedfeatures}} is used to fit all the candidate models on the training dataset,
+#' Function \code{do_cv_step1} is the Step 1 (1)-(2) described above.
+#' Function \code{infer_step1} is the Step 1 (2) described above.
+#' Function \code{infer_fixedfeatures} is used to fit all the candidate models on the training dataset,
 #' and compute the additional variance explained by features (out-of-sample R2) in the test dataset,
-#' as described in the Step 2 (2) bove.
+#' as described in the Step 2 (2) above.
 #'
-#' @return \code{\link{do_cv}} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
-#' If returnall=TRUE, this function also returns all the candidate models,
+#' @return \code{do_cv} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
+#' If \code{returnall=TRUE}, this function also returns all the candidate models,
 #' and the out-of-sample variance explained in each test set by each candidate model.
 #'
-#' \code{\link{do_cv_step1}} and \code{\link{infer_step1}} return a list of three candidate models selected by a single simulation.
+#' \code{do_cv_step1} and \code{infer_step1} return a list of three candidate models selected by a single simulation.
 #'
-#' \code{\link{infer_fixedfeatures}} returns a list of the variance explained in the test set if R2only=TRUE,
+#' \code{infer_fixedfeatures} returns a list of the variance explained in the test set if \code{R2only=TRUE},
 #' otherwise, it returns a list of the variance explained in the test set, the model including all the variables,
 #' and the null model, i.e. the model with outcome and fixed covariates only.
 #'
@@ -105,6 +109,12 @@
 #' Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
 #'
 #' Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
+#'
+#' McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
+#'
+#' Akaike, Hirotogu. "Information theory and an extension of the maximum likelihood principle." Selected papers of hirotugu akaike. Springer, New York, NY, 199-213 (1998).
+#'
+#' Tibshirani, R. Regression shrinkage and selection via the lasso. Journal of the Royal Statistical Society: Series B (Methodological), 58(1), 267-288 (1996).
 #'
 #' @examples
 #' ## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
@@ -137,8 +147,6 @@
 #'                       sim_times=1,featurecap=4,usebinary=1,
 #'                       method="simple",criteria="BIC",
 #'                       gain=TRUE,runparallel=FALSE,verbose=TRUE)
-#' ## If we want to compute the total variance explained
-#' ## we can set gain=FALSE in the above example
 #'
 #' ## Below is an example with a large sample size and simulations
 #' \donttest{
@@ -176,23 +184,41 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
   })
 
   #extract all the candidate models
-  candidate_pool=as.data.frame(matrix(NA,nrow=sim_times*min(featurecap,3),ncol=featurecap))
-  #if there are only two features, in each seed of step 1 we only select two candidate models
-  if(featurecap==2){
+
+  if(criteria=="lasso"){
+    nmodel=vector()
     for(i in 1:sim_times){
-      selected_features1=row.names(as.data.frame(candidate_models[[i]]$model1$coefficients))[-(1:ncol(data_nosnp))]
-      selected_features2=row.names(as.data.frame(candidate_models[[i]]$model2$coefficients))[-(1:ncol(data_nosnp))]
-      candidate_pool[(2*i-1),(1:length(selected_features1))]=selected_features1
-      candidate_pool[(2*i),(1:length(selected_features2))]=selected_features2
+      nmodel[i]=candidate_models[[i]]$totalmodel
+    }
+    candidate_pool=as.data.frame(matrix(NA,nrow=sum(nmodel),ncol=dim(featuredata)[2]))
+    k=1
+    for(i in 1:sim_times){
+      for(j in 1:nmodel[i]){
+        selected_features=candidate_models[[i]]$model[[j]]
+        candidate_pool[k,1:length(selected_features)]=selected_features
+        k=k+1
+      }
     }
   }else{
-    for(i in 1:sim_times){
-      selected_features1=row.names(as.data.frame(candidate_models[[i]]$model1$coefficients))[-(1:ncol(data_nosnp))]
-      selected_features2=row.names(as.data.frame(candidate_models[[i]]$model2$coefficients))[-(1:ncol(data_nosnp))]
-      selected_features3=row.names(as.data.frame(candidate_models[[i]]$model3$coefficients))[-(1:ncol(data_nosnp))]
-      candidate_pool[(3*i-2),(1:length(selected_features1))]=selected_features1
-      candidate_pool[(3*i-1),(1:length(selected_features2))]=selected_features2
-      candidate_pool[(3*i),(1:length(selected_features3))]=selected_features3
+    candidate_pool=as.data.frame(matrix(NA,nrow=sim_times*min(featurecap,3),ncol=featurecap))
+    #if there are only two features, in each seed of step 1 we only select two candidate models
+
+    if(featurecap==2){
+      for(i in 1:sim_times){
+        selected_features1=row.names(as.data.frame(candidate_models[[i]]$model1$coefficients))[-(1:ncol(data_nosnp))]
+        selected_features2=row.names(as.data.frame(candidate_models[[i]]$model2$coefficients))[-(1:ncol(data_nosnp))]
+        candidate_pool[(2*i-1),(1:length(selected_features1))]=selected_features1
+        candidate_pool[(2*i),(1:length(selected_features2))]=selected_features2
+      }
+    }else{
+      for(i in 1:sim_times){
+        selected_features1=row.names(as.data.frame(candidate_models[[i]]$model1$coefficients))[-(1:ncol(data_nosnp))]
+        selected_features2=row.names(as.data.frame(candidate_models[[i]]$model2$coefficients))[-(1:ncol(data_nosnp))]
+        selected_features3=row.names(as.data.frame(candidate_models[[i]]$model3$coefficients))[-(1:ncol(data_nosnp))]
+        candidate_pool[(3*i-2),(1:length(selected_features1))]=selected_features1
+        candidate_pool[(3*i-1),(1:length(selected_features2))]=selected_features2
+        candidate_pool[(3*i),(1:length(selected_features3))]=selected_features3
+      }
     }
   }
 
@@ -254,11 +280,11 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
   #select the best model based on the largest out-of-sample R^2 from 10-fold cv
   best_candidate_index=which.max(R2_10fold_average)
   if(gain){
-    if(verbose) cat('The best model is Model',best_candidate_index,'with average gain',
+    if(verbose) cat('The best model is Model',best_candidate_index,'with average out-of-sample gain',
                     R2_10fold_average[best_candidate_index],'\n')
   }else{
     if(verbose) cat('The best model is Model',best_candidate_index,'which explains',
-                    R2_10fold_average[best_candidate_index],'average total variance \n')
+                    R2_10fold_average[best_candidate_index],'average out-of-sample variance \n')
   }
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
@@ -326,96 +352,141 @@ infer_step1 <- function(data_nosnp,featuredata,
 
   colnames(data_nosnp)[1]='outcome'
 
-  ## It's Step 1: select candidate models
-  ## For a variable called "outcome" in "data_nosnp"
-  ## appending and sequentially searching one feature at a time in "featuredata"
-  ## Using "train" (indices) for computing BIC for each model
-  ## Select model based on the smallest BIC
-  ## "usebinary" controls the model, by default it uses "fastglm"
-  ## "gain" controls whether we report the R2 or gain over the covariates (default)
-
-  featurelist=1:length(colnames(featuredata))
-  wholedata=cbind(data_nosnp,featuredata)
-  nfeature=length(featurelist)
-  ncovar=dim(data_nosnp)[2]-1
-  n_total=nrow(featuredata)
-  modellist=list()
-  minseq <- vector()
-  information_each <- vector()
-  featurename <- vector()
-  data_use=data_nosnp
-
-  if(featurecap>dim(featuredata)[2]) featurecap=dim(featuredata)[2]
-
-  ##train
-  if(verbose) print("Training...")
-
-  ##store the maximum number of features fit in the simulation
-  max_feature_sim=featurecap
-  for(i in 1:featurecap){
-    if(verbose) cat('Adding Feature Number',i,'\n')
-    cal <- function(j){
-      data_try=cbind(data_use[train,,drop=FALSE],featuredata[train,j,drop=FALSE])
-      model_try=themodel(outcome~.,data_try,usebinary)
-      if(criteria=="AIC"){
-        information_try_gain = AIC(model_try)
-        if(verbose) cat('... trying feature',j,colnames(featuredata)[j],'with AIC',information_try_gain,'\n')
-      }else{
-        information_try_gain = AIC(model_try,k=log(nrow(data_try)))
-        if(verbose) cat('... trying feature',j,colnames(featuredata)[j],'with BIC',information_try_gain,'\n')
-      }
-      return(information_try_gain)
-    }
-    if(runparallel==TRUE){
-      information=parallel::mclapply(featurelist,cal,mc.cores=mc.cores)
+  if(criteria=='lasso'){
+    if(usebinary==0){
+      cvfit <- glmnet::cv.glmnet(as.matrix(featuredata[train,]), data_nosnp[train,'outcome'])
     }else{
-      information=lapply(featurelist,cal)
+      cvfit <- glmnet::cv.glmnet(as.matrix(featuredata[train,]), data_nosnp[train,'outcome'],family="binomial")
     }
 
+    lambda_order=order(cvfit$cvm)
+    cv_lambda <- cvfit$lambda[lambda_order]
 
-    gc()
-    minnumber=which.min(unlist(information))
-    information_each[i] = min(unlist(information))
-    minseq[i]=featurelist[minnumber]
-
-    data_use=cbind(data_use,featuredata[,minseq[i],drop=FALSE])
-    modellist[[i]]=themodel(outcome~.,data_use[train,,drop=FALSE],usebinary)
-    featurename[i]=colnames(featuredata)[minseq[i]]
-    colnames(data_use)[ncol(data_use)]=featurename[i]
-    featurelist=featurelist[-minnumber]
-
-    if(verbose) cat('... Using feature',minseq[i],colnames(featuredata)[minseq[i]],'\n')
-
-    #keep three different models to increase the models in the candidate model pool
-    if(i>=3){
-      if(information_each[i-1]>information_each[i-2]){
-        max_feature_sim <- i
-        break;
+    modellist <- list()
+    k=1
+    for(i in 1:length(cv_lambda)){
+      coef_model=coef(cvfit, s = cv_lambda[i])[-1,]
+      feature_select=names(coef_model)[which(coef_model!=0)]
+      if(length(feature_select)!=0){
+        modellist[[k]]=feature_select
+        k=k+1
       }
     }
-  }
+    modellist=unique(modellist)
+    if(length(modellist)==1){
+      if(verbose) cat('Selecting features',modellist[[1]],'\n')
+      return(list(model=list(modellist[[1]]),
+                  max_feature_sim=length(cv_lambda),
+                  totalmodel=1))
+    }
 
-  #choose the model with the top 3 smallest BIC
+    if(length(modellist)==2){
+      if(verbose) cat('Selecting features',modellist[[1]],'but we also keep another choice \n')
+      return(list(model=list(modellist[[1]],modellist[[2]]),
+                  max_feature_sim=length(cv_lambda),
+                  totalmodel=2))
+    }
 
-  #If there are only 2-3 features, we don't have so many models
-  if(featurecap==2){
-    n_feature = order(information_each,decreasing=FALSE)[1:2]
+    if(length(modellist)>=3){
+      if(verbose) cat('Selecting features',modellist[[1]],'but we also keep another 2 choices \n')
+      return(list(model=list(modellist[[1]],modellist[[2]],modellist[[3]]),
+                  max_feature_sim=length(cv_lambda),
+                  totalmodel=3))
+    }
 
-    if(verbose) cat('BIC selects',n_feature[1],'features but we also keep models with',
-                    n_feature[2],'features \n')
-
-    return(list(model1=modellist[[n_feature[1]]],
-                model2=modellist[[n_feature[2]]]))
   }else{
-    n_feature = order(information_each,decreasing=FALSE)[1:3]
+    ## It's Step 1: select candidate models
+    ## For a variable called "outcome" in "data_nosnp"
+    ## appending and sequentially searching one feature at a time in "featuredata"
+    ## Using "train" (indices) for computing BIC for each model
+    ## Select model based on the smallest BIC
+    ## "usebinary" controls the model, by default it uses "fastglm"
+    ## "gain" controls whether we report the R2 or gain over the covariates (default)
 
-    if(verbose) cat('BIC selects',n_feature[1],'features but we also keep models with',
-                    n_feature[2],'and',n_feature[3],'features \n')
+    featurelist=1:length(colnames(featuredata))
+    wholedata=cbind(data_nosnp,featuredata)
+    nfeature=length(featurelist)
+    ncovar=dim(data_nosnp)[2]-1
+    n_total=nrow(featuredata)
+    modellist=list()
+    minseq <- vector()
+    information_each <- vector()
+    featurename <- vector()
+    data_use=data_nosnp
 
-    return(list(model1=modellist[[n_feature[1]]],
-                model2=modellist[[n_feature[2]]],
-                model3=modellist[[n_feature[3]]],
-                max_feature_sim=max_feature_sim))
+    if(featurecap>dim(featuredata)[2]) featurecap=dim(featuredata)[2]
+
+    ##train
+    if(verbose) print("Training...")
+
+    ##store the maximum number of features fit in the simulation
+    max_feature_sim=featurecap
+    for(i in 1:featurecap){
+      if(verbose) cat('Adding Feature Number',i,'\n')
+      cal <- function(j){
+        data_try=cbind(data_use[train,,drop=FALSE],featuredata[train,j,drop=FALSE])
+        model_try=themodel(outcome~.,data_try,usebinary)
+        if(criteria=="AIC"){
+          information_try_gain = AIC(model_try)
+          if(verbose) cat('... trying feature',j,colnames(featuredata)[j],'with AIC',information_try_gain,'\n')
+        }else{
+          information_try_gain = AIC(model_try,k=log(nrow(data_try)))
+          if(verbose) cat('... trying feature',j,colnames(featuredata)[j],'with BIC',information_try_gain,'\n')
+        }
+        return(information_try_gain)
+      }
+      if(runparallel==TRUE){
+        information=parallel::mclapply(featurelist,cal,mc.cores=mc.cores)
+      }else{
+        information=lapply(featurelist,cal)
+      }
+
+
+      gc()
+      minnumber=which.min(unlist(information))
+      information_each[i] = min(unlist(information))
+      minseq[i]=featurelist[minnumber]
+
+      data_use=cbind(data_use,featuredata[,minseq[i],drop=FALSE])
+      modellist[[i]]=themodel(outcome~.,data_use[train,,drop=FALSE],usebinary)
+      featurename[i]=colnames(featuredata)[minseq[i]]
+      colnames(data_use)[ncol(data_use)]=featurename[i]
+      featurelist=featurelist[-minnumber]
+
+      if(verbose) cat('... Using feature',minseq[i],colnames(featuredata)[minseq[i]],'\n')
+
+      #keep three different models to increase the models in the candidate model pool
+      if(i>=3){
+        if(information_each[i-1]>information_each[i-2]){
+          max_feature_sim <- i
+          break;
+        }
+      }
+    }
+
+    #choose the model with the top 3 smallest BIC
+
+    #If there are only 2-3 features, we don't have so many models
+    if(featurecap==2){
+      n_feature = order(information_each,decreasing=FALSE)[1:2]
+
+      if(verbose) cat(criteria, 'selects',n_feature[1],'features but we also keep models with',
+                      n_feature[2],'features \n')
+
+      return(list(model1=modellist[[n_feature[1]]],
+                  model2=modellist[[n_feature[2]]],
+                  max_feature_sim=max_feature_sim))
+    }else{
+      n_feature = order(information_each,decreasing=FALSE)[1:3]
+
+      if(verbose) cat(criteria, 'selects',n_feature[1],'features but we also keep models with',
+                      n_feature[2],'and',n_feature[3],'features \n')
+
+      return(list(model1=modellist[[n_feature[1]]],
+                  model2=modellist[[n_feature[2]]],
+                  model3=modellist[[n_feature[3]]],
+                  max_feature_sim=max_feature_sim))
+    }
   }
 
 }
@@ -456,3 +527,5 @@ infer_fixedfeatures <- function(data_nosnp,featuredata,train=(1:nrow(data_nosnp)
     list(R2=R2_use_gain,model=model_use,null=model_nosnp)
   }
 }
+
+

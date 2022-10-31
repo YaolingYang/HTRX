@@ -19,27 +19,27 @@ twofold_split(
 
 \item{strat}{a vector of the variable (usually the outcome)
 based on which the data is going to be stratified.
-This only works when method="stratified".
-By default, strat=NULL.}
+This only works when \code{method="stratified"}.
+By default, \code{strat=NULL}.}
 
-\item{method}{the method to be used for data split, either "simple" (default) or "stratified".}
+\item{method}{the method to be used for data split, either \code{"simple"} (default) or \code{"stratified"}.}
 
 \item{train_proportion}{a positive number between 0 and 1 giving
 the proportion of the training dataset when splitting data into 2 folds.
-By default, train_proportion=0.5.}
+By default, \code{train_proportion=0.5}.}
 }
 \value{
 a list containing the indexes of different folds.
 }
 \description{
-\code{\link{tenfold_split}} splits data into ten folds, which is used for cross-validation.
-\code{\link{twofold_split}} splits data into two folds, which samples the training set.
+\code{tenfold_split} splits data into ten folds, which is used for cross-validation.
+\code{twofold_split} splits data into two folds, which samples the training set.
 Both stratified sampling and simple sampling are allowed.
 The details can be found in function \code{\link{do_cv}} and \code{\link{do_cumulative_htrx}}.
 }
 \details{
-Stratified sampling works only when the "strat" variable is binary (either 0 or 1),
-and it ensures each fold has almost the same number of strat=0 and strat=1.
+Stratified sampling works only when the \code{strat} variable is binary (either 0 or 1),
+and it ensures each fold has almost the same number of \code{strat=0} and \code{strat=1}.
 
 Simple sampling randomly splits the data into k folds (k=2 or 10).
 

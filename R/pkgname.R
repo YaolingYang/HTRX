@@ -2,7 +2,7 @@
 #'
 #' @description
 #' This is the software for "HTRX - Haplotype Trend Regression with eXtra flexibility (HTRX)"
-#' based on the papar Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations, Barrie et al, 2022.
+#' based on the papar Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations, Barrie W, Yang Y, Attfield K E, et al (2022).
 #'
 #' HTRX searches for haplotype patterns that include single nucleotide polymorphisms (SNPs) and non-contiguous haplotypes.
 #'
@@ -11,9 +11,12 @@
 #'
 #' We used a two-step procedure to select the best HTRX model: \code{\link{do_cv}}.
 #'
-#' Step 1: select candidate models;
+#' Step 1: select candidate models using AIC, BIC or lasso;
 #'
 #' Step 2: select the best model using 10-fold cross-validation.
+#'
+#' There is also an option to directly perform 10-fold cross-validation: \code{\link{do_cv_direct}}.
+#' This method loses some accuracy and doesn't return the fixed features selected, but saves computational time.
 #'
 #' Longer haplotypes are important for discovering interactions.
 #' However, too many haplotypes make original HTRX unrealistic for regions with large numbers of SNPs.
@@ -28,6 +31,10 @@
 #' Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
 #'
 #' McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
+#'
+#' Akaike, Hirotogu. "Information theory and an extension of the maximum likelihood principle." Selected papers of hirotugu akaike. Springer, New York, NY, 199-213 (1998).
+#'
+#' Tibshirani, R. Regression shrinkage and selection via the lasso. Journal of the Royal Statistical Society: Series B (Methodological), 58(1), 267-288 (1996).
 #' @importFrom methods is
 "_PACKAGE"
 #> [1] "_PACKAGE"
