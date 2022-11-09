@@ -240,13 +240,14 @@ Step 2: select the best model using k-fold cross-validation.
 (1) Randomly split the whole data into k groups with approximately equal sizes,
 using stratified sampling when the outcome is binary;
 
-(2) In each of the k folds, use a different group as the test dataset,
-and take the remaining groups as the training dataset.
+(2) In each of the k folds, use a fold as the validation dataset, a fold as the test dataset,
+and the remaining folds as the training dataset.
 Then, fit all the candidate models on the training dataset,
 and use these fitted models to compute the additional variance explained by features
-(out-of-sample variance explained) in the test dataset.
+(out-of-sample variance explained) in the validation and test dataset.
 Finally, select the candidate model with the biggest
-average out-of-sample variance explained as the best model.
+average out-of-sample variance explained in the validation set as the best model,
+and report the out-of-sample variance explained in the test set.
 
 Function \code{do_cumulative_htrx_step1} is the Step 1 (1)-(3) described above.
 Function \code{extend_haps} is used to select haplotypes in the Step 1 (2) described above.
@@ -291,15 +292,15 @@ cumu_htrx_results <- do_cumulative_htrx(HTRX::example_data_nosnp[1:500,1:3],
 #This result would be more precise when setting larger sim_times and featurecap
 }
 \references{
-Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022).
 
-Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
+Eforn, B. "Bootstrap methods: another look at the jackknife." The Annals of Statistics 7 (1979): 1-26.
 
-Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
+Schwarz, Gideon. "Estimating the dimension of a model." The annals of statistics (1978): 461-464.
 
-McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
+McFadden, Daniel. "Conditional logit analysis of qualitative choice behavior." (1973).
 
-Akaike, Hirotogu. "Information theory and an extension of the maximum likelihood principle." Selected papers of hirotugu akaike. Springer, New York, NY, 199-213 (1998).
+Akaike, Hirotugu. "A new look at the statistical model identification." IEEE transactions on automatic control 19.6 (1974): 716-723.
 
-Tibshirani, R. Regression shrinkage and selection via the lasso. Journal of the Royal Statistical Society: Series B (Methodological), 58(1), 267-288 (1996).
+Tibshirani, Robert. "Regression shrinkage and selection via the lasso." Journal of the Royal Statistical Society: Series B (Methodological) 58.1 (1996): 267-288.
 }

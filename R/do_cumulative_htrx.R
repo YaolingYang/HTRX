@@ -114,13 +114,14 @@
 #' (1) Randomly split the whole data into k groups with approximately equal sizes,
 #' using stratified sampling when the outcome is binary;
 #'
-#' (2) In each of the k folds, use a different group as the test dataset,
-#' and take the remaining groups as the training dataset.
+#' (2) In each of the k folds, use a fold as the validation dataset, a fold as the test dataset,
+#' and the remaining folds as the training dataset.
 #' Then, fit all the candidate models on the training dataset,
 #' and use these fitted models to compute the additional variance explained by features
-#' (out-of-sample variance explained) in the test dataset.
+#' (out-of-sample variance explained) in the validation and test dataset.
 #' Finally, select the candidate model with the biggest
-#' average out-of-sample variance explained as the best model.
+#' average out-of-sample variance explained in the validation set as the best model,
+#' and report the out-of-sample variance explained in the test set.
 #'
 #' Function \code{do_cumulative_htrx_step1} is the Step 1 (1)-(3) described above.
 #' Function \code{extend_haps} is used to select haplotypes in the Step 1 (2) described above.
@@ -145,17 +146,18 @@
 #'
 #' \code{make_cumulative_htrx} returns a data frame of the haplotype matrix.
 #'
-#' @references Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+#' @references
+#' Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022).
 #'
-#' Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
+#' Eforn, B. "Bootstrap methods: another look at the jackknife." The Annals of Statistics 7 (1979): 1-26.
 #'
-#' Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
+#' Schwarz, Gideon. "Estimating the dimension of a model." The annals of statistics (1978): 461-464.
 #'
-#' McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
+#' McFadden, Daniel. "Conditional logit analysis of qualitative choice behavior." (1973).
 #'
-#' Akaike, Hirotogu. "Information theory and an extension of the maximum likelihood principle." Selected papers of hirotugu akaike. Springer, New York, NY, 199-213 (1998).
+#' Akaike, Hirotugu. "A new look at the statistical model identification." IEEE transactions on automatic control 19.6 (1974): 716-723.
 #'
-#' Tibshirani, R. Regression shrinkage and selection via the lasso. Journal of the Royal Statistical Society: Series B (Methodological), 58(1), 267-288 (1996).
+#' Tibshirani, Robert. "Regression shrinkage and selection via the lasso." Journal of the Royal Statistical Society: Series B (Methodological) 58.1 (1996): 267-288.
 #' @examples
 #' ## use dataset "example_hap1", "example_hap2" and "example_data_nosnp"
 #' ## "example_hap1" and "example_hap2" are
@@ -258,69 +260,110 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
     split=kfold_split(data_nosnp[,"outcome"],fold=fold,method=method)
   }else stop("method must be either simple or stratified")
 
-  R2_kfold=as.data.frame(matrix(NA,nrow=fold,ncol=nrow(candidate_pool)))
+  #start k-fold cross-validation
 
-  R2_kfold_average=vector()
+  R2_kfold_valid=as.data.frame(matrix(NA,nrow=fold,ncol=nrow(candidate_pool)))
+  R2_kfold_test=as.data.frame(matrix(NA,nrow=fold,ncol=nrow(candidate_pool)))
+
+  R2_kfold_average_valid=vector()
+  R2_kfold_average_test=vector()
+
+  test_index <- function(p){
+    if(p<fold) return(p+1)
+    if(p==fold) return(1)
+  }
 
   for(i in 1:nrow(candidate_pool)){
-    if(verbose) cat('Candidate model',i,'has feature',unlist(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),'\n')
+    if(verbose) cat('Candidate model',i,'has feature',
+                    unlist(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),'\n')
     if(runparallel){
+      if(verbose) cat('Begin validation \n')
+      R2_valid_gain=parallel::mclapply(1:fold,function(s){
+        featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
+                              fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
+        infer_fixedfeatures(data_nosnp,featuredata,
+                            train=(1:n_total)[-c(split[[s]],split[[test_index(s)]])],
+                            test=split[[s]],
+                            features=as.character(gsub('`','',candidate_pool[i,which(!is.na(candidate_pool[i,]))])),
+                            usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
+      },mc.cores=mc.cores)
+      if(verbose) cat('Begin test \n')
       R2_test_gain=parallel::mclapply(1:fold,function(s){
         featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
                               fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
-        infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
-                            features=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),
+        infer_fixedfeatures(data_nosnp,featuredata,
+                            train=(1:n_total)[-c(split[[s]],split[[test_index(s)]])],
+                            test=split[[test_index(s)]],
+                            features=as.character(gsub('`','',candidate_pool[i,which(!is.na(candidate_pool[i,]))])),
                             usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
       },mc.cores=mc.cores)
     }else{
+      if(verbose) cat('Begin validation \n')
+      R2_valid_gain=lapply(1:fold,function(s){
+        featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
+                              fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
+        infer_fixedfeatures(data_nosnp,featuredata,
+                            train=(1:n_total)[-c(split[[s]],split[[test_index(s)]])],
+                            test=split[[s]],
+                            features=as.character(gsub('`','',candidate_pool[i,which(!is.na(candidate_pool[i,]))])),
+                            usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
+      })
+      if(verbose) cat('Begin test \n')
       R2_test_gain=lapply(1:fold,function(s){
         featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
                               fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
-        infer_fixedfeatures(data_nosnp,featuredata,test=split[[s]],
-                            features=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]),
+        infer_fixedfeatures(data_nosnp,featuredata,
+                            train=(1:n_total)[-c(split[[s]],split[[test_index(s)]])],
+                            test=split[[test_index(s)]],
+                            features=as.character(gsub('`','',candidate_pool[i,which(!is.na(candidate_pool[i,]))])),
                             usebinary=usebinary,gain=gain,R2only=TRUE,verbose=verbose)
       })
     }
-    R2_kfold[,i]=unlist(R2_test_gain)
-    R2_kfold_average[i]=mean(R2_kfold[,i])
+    R2_kfold_valid[,i]=unlist(R2_valid_gain)
+    R2_kfold_average_valid[i]=mean(R2_kfold_valid[,i])
+    R2_kfold_test[,i]=unlist(R2_test_gain)
+    R2_kfold_average_test[i]=mean(R2_kfold_test[,i])
     if(gain){
-      if(verbose) cat('Average gain for candidate model',i,'is',R2_kfold_average[i],'\n')
+      if(verbose) cat('Average gain for candidate model',i,'in validation set is',R2_kfold_average_valid[i],'\n')
     }else{
-      if(verbose) cat('Average total variance explained by candidate model',i,'is',R2_kfold_average[i],'\n')
+      if(verbose) cat('Average total variance explained by candidate model',i,'in validation set is',
+                      R2_kfold_average_valid[i],'\n')
     }
+
   }
+
   #select the best model based on the largest out-of-sample R^2 from k-fold cv
-  best_candidate_index=which.max(R2_kfold_average)
+  best_candidate_index=which.max(R2_kfold_average_valid)
   if(gain){
-    if(verbose)  cat('The best model is Model',best_candidate_index,
-                     'with average gain',R2_kfold_average[best_candidate_index],'\n')
+    if(verbose) cat('The best model is Model',best_candidate_index,'with average out-of-sample gain',
+                    R2_kfold_average_test[best_candidate_index],'\n')
   }else{
-    if(verbose) cat('The best model is Model',best_candidate_index,
-                    'which explains',R2_kfold_average[best_candidate_index],'average total variance \n')
+    if(verbose) cat('The best model is Model',best_candidate_index,'which explains',
+                    R2_kfold_average_test[best_candidate_index],'average out-of-sample variance \n')
   }
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
 
   if(returnall){
     if(returnwork){
-      return(list(R2_test_gain_candidates=R2_kfold,
+      return(list(R2_test_gain_candidates=R2_kfold_test,
                   candidates=candidate_pool,
-                  R2_test_gain=R2_kfold[,best_candidate_index],
+                  R2_test_gain=R2_kfold_test[,best_candidate_index],
                   selected_features=selected_features,
                   work=work))
     }else{
-      return(list(R2_test_gain_candidates=R2_kfold,
+      return(list(R2_test_gain_candidates=R2_kfold_test,
                   candidates=candidate_pool,
-                  R2_test_gain=R2_kfold[,best_candidate_index],
+                  R2_test_gain=R2_kfold_test[,best_candidate_index],
                   selected_features=selected_features))
     }
   }else{
     if(returnwork){
-      return(list(R2_test_gain=R2_kfold[,best_candidate_index],
+      return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
                   selected_features=selected_features,
                   work=work))
     }else{
-      return(list(R2_test_gain=R2_kfold[,best_candidate_index],
+      return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
                   selected_features=selected_features))
     }
   }

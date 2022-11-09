@@ -54,5 +54,5 @@ outcome_predict=mypredict(model,data[81:100,])
 computeR2(outcome_predict,data[81:100,'outcome'],usebinary=1)
 }
 \references{
-McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
+McFadden, Daniel. "Conditional logit analysis of qualitative choice behavior." (1973).
 }

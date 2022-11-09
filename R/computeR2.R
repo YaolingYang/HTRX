@@ -21,7 +21,9 @@
 #' linear model (conventional \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}) or
 #' the generalized linear model (McFadden's \ifelse{html}{\out{R<sup>2</sup>}}{\eqn{R^2}}).
 #'
-#' @references McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
+#' @references
+#' McFadden, Daniel. "Conditional logit analysis of qualitative choice behavior." (1973).
+
 #' @examples
 #' ## create datasets
 #' x=matrix(runif(100,-2,2),ncol=5)

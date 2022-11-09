@@ -24,17 +24,18 @@
 #'
 #' The code for HTRX is hosted at \url{https://github.com/YaolingYang/HTRX}.
 #'
-#' @references Barrie W, Yang Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations. bioRxiv (2022).
+#' @references
+#' Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022).
 #'
-#' Efron, B. Bootstrap Methods: Another Look at the Jackknife. Ann. Stat. 7, 1-26 (1979).
+#' Eforn, B. "Bootstrap methods: another look at the jackknife." The Annals of Statistics 7 (1979): 1-26.
 #'
-#' Kass, R. E. & Wasserman, L. A Reference Bayesian Test for Nested Hypotheses and its Relationship to the Schwarz Criterion. J. Am. Stat. Assoc. 90, 928-934 (1995).
+#' Schwarz, Gideon. "Estimating the dimension of a model." The annals of statistics (1978): 461-464.
 #'
-#' McFadden, D. Conditional logit analysis of qualitative choice behavior. (1973).
+#' McFadden, Daniel. "Conditional logit analysis of qualitative choice behavior." (1973).
 #'
-#' Akaike, Hirotogu. "Information theory and an extension of the maximum likelihood principle." Selected papers of hirotugu akaike. Springer, New York, NY, 199-213 (1998).
+#' Akaike, Hirotugu. "A new look at the statistical model identification." IEEE transactions on automatic control 19.6 (1974): 716-723.
 #'
-#' Tibshirani, R. Regression shrinkage and selection via the lasso. Journal of the Royal Statistical Society: Series B (Methodological), 58(1), 267-288 (1996).
+#' Tibshirani, Robert. "Regression shrinkage and selection via the lasso." Journal of the Royal Statistical Society: Series B (Methodological) 58.1 (1996): 267-288.
 #' @importFrom methods is
 "_PACKAGE"
 #> [1] "_PACKAGE"
