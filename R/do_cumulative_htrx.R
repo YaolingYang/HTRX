@@ -50,10 +50,6 @@
 #' the data should be split into for cross-validation.
 #' @param kfoldseed a positive integer specifying the seed used to
 #' split data for k-fold cross validation. By default, \code{kfoldseed=123}.
-#' @param returnall logical. If \code{returnall=TRUE}, return all the candidate models and
-#' the variance explained in each of k test set for these the candidate models.
-#' If \code{returnall=FALSE} (default), only return the best candidate model
-#' and the variance explained in each of k test set by this model.
 #' @param htronly logical. If \code{htronly=TRUE}, only haplotypes with interaction
 #' between all the SNPs will be selected. Please set \code{max_int=NULL} when \code{htronly=TRUE}.
 #' By default, \code{htronly=FALSE}.
@@ -137,8 +133,6 @@
 #'
 #' @return \code{do_cumulative_htrx} returns a list containing the best model selected,
 #'  and the out-of-sample variance explained in each test set.
-#'  If \code{returnall=TRUE}, this function also returns all the candidate models,
-#'  and the out-of-sample variance explained in each test set by each candidate model.
 #'
 #' \code{do_cv_step1} returns a list of three candidate models selected by a single simulation.
 #'
@@ -199,7 +193,7 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
                                runparallel=FALSE,mc.cores=6,rareremove=FALSE,
                                rare_threshold=0.001,L=6,
                                dataseed=1:sim_times,fold=10,kfoldseed=123,
-                               returnall=FALSE,htronly=FALSE,max_int=NULL,
+                               htronly=FALSE,max_int=NULL,
                                returnwork=FALSE,verbose=FALSE){
 
   colnames(data_nosnp)[1]='outcome'
@@ -344,28 +338,13 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
 
-  if(returnall){
-    if(returnwork){
-      return(list(R2_test_gain_candidates=R2_kfold_test,
-                  candidates=candidate_pool,
-                  R2_test_gain=R2_kfold_test[,best_candidate_index],
-                  selected_features=selected_features,
-                  work=work))
-    }else{
-      return(list(R2_test_gain_candidates=R2_kfold_test,
-                  candidates=candidate_pool,
-                  R2_test_gain=R2_kfold_test[,best_candidate_index],
-                  selected_features=selected_features))
-    }
+  if(returnwork){
+    return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
+                selected_features=selected_features,
+                work=work))
   }else{
-    if(returnwork){
-      return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
-                  selected_features=selected_features,
-                  work=work))
-    }else{
-      return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
-                  selected_features=selected_features))
-    }
+    return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
+                selected_features=selected_features))
   }
 }
 

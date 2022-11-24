@@ -29,7 +29,6 @@ do_cumulative_htrx(
   dataseed = 1:sim_times,
   fold = 10,
   kfoldseed = 123,
-  returnall = FALSE,
   htronly = FALSE,
   max_int = NULL,
   returnwork = FALSE,
@@ -151,11 +150,6 @@ the data should be split into for cross-validation.}
 \item{kfoldseed}{a positive integer specifying the seed used to
 split data for k-fold cross validation. By default, \code{kfoldseed=123}.}
 
-\item{returnall}{logical. If \code{returnall=TRUE}, return all the candidate models and
-the variance explained in each of k test set for these the candidate models.
-If \code{returnall=FALSE} (default), only return the best candidate model
-and the variance explained in each of k test set by this model.}
-
 \item{htronly}{logical. If \code{htronly=TRUE}, only haplotypes with interaction
 between all the SNPs will be selected. Please set \code{max_int=NULL} when \code{htronly=TRUE}.
 By default, \code{htronly=FALSE}.}
@@ -182,8 +176,6 @@ These features exclude all the data in \code{data_nosnp}, and will be selected u
 \value{
 \code{do_cumulative_htrx} returns a list containing the best model selected,
  and the out-of-sample variance explained in each test set.
- If \code{returnall=TRUE}, this function also returns all the candidate models,
- and the out-of-sample variance explained in each test set by each candidate model.
 
 \code{do_cv_step1} returns a list of three candidate models selected by a single simulation.
 

@@ -22,7 +22,6 @@ do_cv(
   mc.cores = 6,
   fold = 10,
   kfoldseed = 123,
-  returnall = FALSE,
   returnwork = FALSE,
   verbose = FALSE
 )
@@ -114,11 +113,6 @@ the data should be split into for cross-validation.}
 \item{kfoldseed}{a positive integer specifying the seed used to
 split data for k-fold cross validation. By default, \code{kfoldseed=123}.}
 
-\item{returnall}{logical. If \code{returnall=TRUE}, return all the candidate models and
-the variance explained in each of k test set for these the candidate models.
-If \code{returnall=FALSE} (default), only return the best candidate model
-and the variance explained in each of k test set by this model.}
-
 \item{returnwork}{logical. If \code{returnwork=TRUE}, return a vector of the maximum number
 of features that are assessed in each simulation, excluding the fixed covariates.
 This is used to assess how much computational 'work' is done in Step 1(2) of HTRX (see details).
@@ -142,9 +136,8 @@ returns the variance explained in the test data.
 By default, \code{R2only=FALSE}.}
 }
 \value{
-\code{do_cv} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
-If \code{returnall=TRUE}, this function also returns all the candidate models,
-and the out-of-sample variance explained in each test set by each candidate model.
+\code{do_cv} returns a list containing the best model selected,
+and the out-of-sample variance explained in each test set.
 
 \code{do_cv_step1} and \code{infer_step1} return a list of three candidate models selected by a single simulation.
 

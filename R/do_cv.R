@@ -34,10 +34,6 @@
 #' the data should be split into for cross-validation.
 #' @param kfoldseed a positive integer specifying the seed used to
 #' split data for k-fold cross validation. By default, \code{kfoldseed=123}.
-#' @param returnall logical. If \code{returnall=TRUE}, return all the candidate models and
-#' the variance explained in each of k test set for these the candidate models.
-#' If \code{returnall=FALSE} (default), only return the best candidate model
-#' and the variance explained in each of k test set by this model.
 #' @param returnwork logical. If \code{returnwork=TRUE}, return a vector of the maximum number
 #' of features that are assessed in each simulation, excluding the fixed covariates.
 #' This is used to assess how much computational 'work' is done in Step 1(2) of HTRX (see details).
@@ -99,9 +95,8 @@
 #' and compute the additional variance explained by features (out-of-sample R2) in the test dataset,
 #' as described in the Step 2 (2) above.
 #'
-#' @return \code{do_cv} returns a list containing the best model selected, and the out-of-sample variance explained in each test set.
-#' If \code{returnall=TRUE}, this function also returns all the candidate models,
-#' and the out-of-sample variance explained in each test set by each candidate model.
+#' @return \code{do_cv} returns a list containing the best model selected,
+#' and the out-of-sample variance explained in each test set.
 #'
 #' \code{do_cv_step1} and \code{infer_step1} return a list of three candidate models selected by a single simulation.
 #'
@@ -177,7 +172,7 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
                   featurecap=dim(featuredata)[2],usebinary=1,
                   method="simple",criteria="BIC",gain=TRUE,nmodel=3,
                   runparallel=FALSE,mc.cores=6,fold=10,kfoldseed=123,
-                  returnall=FALSE,returnwork=FALSE,verbose=FALSE){
+                  returnwork=FALSE,verbose=FALSE){
 
   colnames(data_nosnp)[1]='outcome'
 
@@ -309,28 +304,14 @@ do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
   }
   selected_features=candidate_pool[best_candidate_index,
                                    which(!is.na(candidate_pool[best_candidate_index,]))]
-  if(returnall){
-    if(returnwork){
-      return(list(R2_test_gain_candidates=R2_kfold_test,
-                  candidates=candidate_pool,
-                  R2_test_gain=R2_kfold_test[,best_candidate_index],
-                  selected_features=selected_features,
-                  work=work))
-    }else{
-      return(list(R2_test_gain_candidates=R2_kfold_test,
-                  candidates=candidate_pool,
-                  R2_test_gain=R2_kfold_test[,best_candidate_index],
-                  selected_features=selected_features))
-    }
+
+  if(returnwork){
+    return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
+                selected_features=selected_features,
+                work=work))
   }else{
-    if(returnwork){
-      return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
-                  selected_features=selected_features,
-                  work=work))
-    }else{
-      return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
-                  selected_features=selected_features))
-    }
+    return(list(R2_test_gain=R2_kfold_test[,best_candidate_index],
+                selected_features=selected_features))
   }
 }
 
