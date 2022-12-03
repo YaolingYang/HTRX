@@ -30,8 +30,8 @@ HTRX is a template gives a value for each SNP taking values of ‘0’ or
 ‘1’, reflecting whether the reference allele of each SNP is present or
 absent, or an ‘X’ meaning either value is allowed.
 
-We used a two-step procedure to select the best HTRX model (function
-“do_cv”). Step 1: select candidate models; Step 2: select the best model
+We used a two-stage procedure to select the best HTRX model (function
+“do_cv”). Stage 1: select candidate models; Stage 2: select the best model
 using 10-fold cross-validation.
 
 Longer haplotypes are important for discovering interactions. However,
