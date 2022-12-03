@@ -6,12 +6,12 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-This is the location for the HTRX tool that was firstly proposed in   
+This is the location for the HTRX tool that was firstly proposed by   
 [Barrie W, Yang
 Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated
 in Pastoralist Steppe populations. bioRxiv
 (2022)](https://www.biorxiv.org/content/10.1101/2022.09.23.509097v1)   
-and then improved in   
+and then improved by   
 [Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv
 (2022)](https://www.biorxiv.org/content/10.1101/2022.11.29.518395v1).
 
