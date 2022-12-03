@@ -31,8 +31,9 @@ HTRX is a template gives a value for each SNP taking values of ‘0’ or
 absent, or an ‘X’ meaning either value is allowed.
 
 We used a two-stage procedure to select the best HTRX model (function
-“do_cv”). Stage 1: select candidate models; Stage 2: select the best model
-using 10-fold cross-validation.
+“do_cv”). 
+Stage 1: select candidate models; 
+Stage 2: select the best model using 10-fold cross-validation.
 
 Longer haplotypes are important for discovering interactions. However,
 there are $3^k-1$ haplotypes in HTRX if the region contains $k$ SNPs,
