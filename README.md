@@ -10,10 +10,10 @@ This is the location for the HTRX tool that was firstly proposed by
 [Barrie W, Yang
 Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated
 in Pastoralist Steppe populations. bioRxiv
-(2022)](https://www.biorxiv.org/content/10.1101/2022.09.23.509097v1)   
-and then improved by   
+(2022): 2022.09.23.509097](https://www.biorxiv.org/content/10.1101/2022.09.23.509097v1)   
+and then illustrated in detail by   
 [Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv
-(2022)](https://www.biorxiv.org/content/10.1101/2022.11.29.518395v1).
+(2022): 2022-11.29.518395](https://www.biorxiv.org/content/10.1101/2022.11.29.518395v1).
 
 -   Authors:  
     Yaoling Yang (<yaoling.yang@bristol.ac.uk>)  
@@ -23,11 +23,11 @@ and then improved by
 
 ## Introduction:
 
-Haplotype Trend Regression with eXtra flexibility (HTRX) searches for
-haplotype patterns that include single nucleotide polymorphisms (SNPs)
+Haplotype Trend Regression with eXtra flexibility (HTRX) searches a pre-defined 
+set of SNPs for haplotype patterns that include single nucleotide polymorphisms (SNPs)
 and non-contiguous haplotypes.
 
-HTRX is a template gives a value for each SNP taking values of ‘0’ or
+We search over all possible templates which give a value for each SNP being ‘0’ or
 ‘1’, reflecting whether the reference allele of each SNP is present or
 absent, or an ‘X’ meaning either value is allowed.
 
