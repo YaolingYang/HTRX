@@ -8,7 +8,7 @@ Authors@R: c(
     person("Daniel", "Lawson", email = "Dan.Lawson@bristol.ac.uk", role = "aut",
   comment = c(ORCID = "0000-0002-5311-6213")))
 Maintainer: Yaoling Yang <yaoling.yang@bristol.ac.uk>
-Description: Detection of haplotype patterns that include single nucleotide polymorphisms (SNPs) and non-contiguous haplotypes that are associated with a phenotype. Methods for implementing HTRX are described in Yang Y, Lawson DJ (2022) <doi: https://doi.org/10.1101/2022.11.29.518395>.
+Description: Detection of haplotype patterns that include single nucleotide polymorphisms (SNPs) and non-contiguous haplotypes that are associated with a phenotype. Methods for implementing HTRX are described in Yang Y, Lawson DJ (2022) <doi: 10.1101/2022.11.29.518395>.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
