@@ -56,6 +56,8 @@ This package is also available from CRAN. You can install it by
 ``` r
 install.packages("HTRX")
 ```
+## Tutorial
+A tutorial of package HTRX can be found in vignettes/HTRX_vignette.pdf
 
 ## Examples
 
