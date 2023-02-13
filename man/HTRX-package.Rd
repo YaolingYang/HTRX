@@ -30,7 +30,9 @@ We proposed "cumulative HTRX" that enables HTRX to run on longer haplotypes: \co
 The code for HTRX is hosted at \url{https://github.com/YaolingYang/HTRX}.
 }
 \references{
-Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022).
+Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv (2022): 2022-11.29.518395.
+
+Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022): 2022.09.23.509097.
 
 Eforn, B. "Bootstrap methods: another look at the jackknife." The Annals of Statistics 7 (1979): 1-26.
 

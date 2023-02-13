@@ -1,18 +1,21 @@
 Package: HTRX
 Type: Package
 Title: Haplotype Trend Regression with eXtra Flexibility (HTRX)
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: c(
     person("Yaoling", "Yang", email = "yaoling.yang@bristol.ac.uk", role = c("aut", "cre"),
   comment = c(ORCID = "0000-0003-4905-8097")),
     person("Daniel", "Lawson", email = "Dan.Lawson@bristol.ac.uk", role = "aut",
   comment = c(ORCID = "0000-0002-5311-6213")))
 Maintainer: Yaoling Yang <yaoling.yang@bristol.ac.uk>
-Description: Detection of haplotype patterns that include single nucleotide polymorphisms (SNPs) and non-contiguous haplotypes that are associated with a phenotype. Methods for implementing HTRX are described in Barrie W, Yang Y, Attfield K E, et al (2022) <doi:10.1101/2022.09.23.509097>.
+Description: Detection of haplotype patterns that include single nucleotide polymorphisms (SNPs) and non-contiguous haplotypes that are associated with a phenotype. Methods for implementing HTRX are described in Yang Y, Lawson DJ (2022) <doi: https://doi.org/10.1101/2022.11.29.518395>.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.1
 Depends: R (>= 4.0.0)
 Imports: fastglm, caret, parallel, methods, stats, glmnet
-
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -11,7 +11,7 @@ do_cv(
   data_nosnp,
   featuredata,
   train_proportion = 0.5,
-  sim_times = 20,
+  sim_times = 5,
   featurecap = dim(featuredata)[2],
   usebinary = 1,
   method = "simple",
@@ -80,7 +80,7 @@ the proportion of the training dataset when splitting data into 2 folds.
 By default, \code{train_proportion=0.5}.}
 
 \item{sim_times}{an integer giving the number of simulations in Step 1 (see details).
-By default, \code{sim_times=20}.}
+By default, \code{sim_times=5}.}
 
 \item{featurecap}{a positive integer which manually sets the maximum number of independent features.
 By default, \code{featurecap=40}.}
@@ -228,23 +228,12 @@ htrx_results <- do_cv(HTRX::example_data_nosnp[1:300,1:2],
                       method="simple",criteria="BIC",
                       gain=TRUE,runparallel=FALSE,verbose=TRUE)
 
-## Below is an example with a large sample size and simulations
-\donttest{
-HTRX_matrix=make_htrx(HTRX::example_hap1[,1:4],
-                      HTRX::example_hap1[,1:4])
-## next compute the maximum number of independent features
-featurecap=htrx_max(nsnp=4,cap=10)
-## then perform HTRX using 2-step cross-validation
-htrx_results <- do_cv(HTRX::example_data_nosnp[,1:3],
-                      HTRX_matrix,train_proportion=0.5,
-                      sim_times=5,featurecap=featurecap,usebinary=1,
-                      method="stratified",criteria="BIC",
-                      gain=TRUE,runparallel=FALSE,verbose=TRUE)
-}
 #This result would be more precise when setting larger sim_times and featurecap
 }
 \references{
-Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022).
+Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv (2022): 2022-11.29.518395.
+
+Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022): 2022.09.23.509097.
 
 Eforn, B. "Bootstrap methods: another look at the jackknife." The Annals of Statistics 7 (1979): 1-26.
 

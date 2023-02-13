@@ -14,7 +14,7 @@
 #' the proportion of the training dataset when splitting data into 2 folds.
 #' By default, \code{train_proportion=0.5}.
 #' @param sim_times an integer giving the number of simulations in Step 1 (see details).
-#' By default, \code{sim_times=10}.
+#' By default, \code{sim_times=5}.
 #' @param featurecap a positive integer which manually sets the maximum number of independent features.
 #' By default, \code{featurecap=40}.
 #' @param usebinary a non-negative number representing different models.
@@ -141,7 +141,9 @@
 #' \code{make_cumulative_htrx} returns a data frame of the haplotype matrix.
 #'
 #' @references
-#' Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022).
+#' Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv (2022): 2022-11.29.518395.
+#'
+#' Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022): 2022.09.23.509097.
 #'
 #' Eforn, B. "Bootstrap methods: another look at the jackknife." The Annals of Statistics 7 (1979): 1-26.
 #'
@@ -175,7 +177,7 @@
 #' cumu_htrx_results <- do_cumulative_htrx(HTRX::example_data_nosnp[1:500,1:3],
 #'                                         HTRX::example_hap1[1:500,],
 #'                                         HTRX::example_hap2[1:500,],
-#'                                         train_proportion=0.5,sim_times=5,
+#'                                         train_proportion=0.5,sim_times=1,
 #'                                         featurecap=10,usebinary=1,
 #'                                         randomorder=TRUE,method="stratified",
 #'                                         criteria="BIC",gain=TRUE,
@@ -187,7 +189,7 @@ NULL
 #' @rdname do_cumulative_htrx
 #' @export
 do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
-                               sim_times=10,
+                               sim_times=5,
                                featurecap=40,usebinary=1,randomorder=TRUE,fixorder=NULL,
                                method="simple",criteria="BIC",gain=TRUE,nmodel=3,
                                runparallel=FALSE,mc.cores=6,rareremove=FALSE,
@@ -217,7 +219,11 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
     for(i in 1:sim_times){
       for(j in 1:nmodel){
         selected_features=candidate_models[[i]]$model[[j]]
-        candidate_pool[k,1:length(selected_features)]=selected_features
+        if(length(selected_features)>featurecap){
+          candidate_pool[k,1:featurecap]=selected_features[1:featurecap]
+        }else{
+          candidate_pool[k,1:length(selected_features)]=selected_features
+        }
         k=k+1
       }
     }
