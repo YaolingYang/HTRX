@@ -222,11 +222,11 @@ HTRX_matrix=make_htrx(HTRX::example_hap1[1:300,1:4],
 ## then perform HTRX using 2-step cross-validation in a single small example
 ## to compute additional variance explained by haplotypes
 ## If you want to compute total variance explained, please set gain=FALSE
-htrx_results <- do_cv(HTRX::example_data_nosnp[1:300,1:2],
-                      HTRX_matrix,train_proportion=0.5,
-                      sim_times=1,featurecap=4,usebinary=1,
-                      method="simple",criteria="BIC",
-                      gain=TRUE,runparallel=FALSE,verbose=TRUE)
+CV_results <- do_cv(HTRX::example_data_nosnp[1:300,1:2],
+                    HTRX_matrix,train_proportion=0.5,
+                    sim_times=1,featurecap=4,usebinary=1,
+                    method="simple",criteria="BIC",
+                    gain=TRUE,runparallel=FALSE,verbose=TRUE)
 
 #This result would be more precise when setting larger sim_times and featurecap
 }

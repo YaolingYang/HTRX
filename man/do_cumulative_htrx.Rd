@@ -272,14 +272,14 @@ head(HTRX::example_hap1)
 ## If you want to compute total variance explained, please set gain=FALSE
 ## For Linux/MAC users, we recommend setting runparallel=TRUE
 \donttest{
-cumu_htrx_results <- do_cumulative_htrx(HTRX::example_data_nosnp[1:500,1:3],
-                                        HTRX::example_hap1[1:500,],
-                                        HTRX::example_hap2[1:500,],
-                                        train_proportion=0.5,sim_times=1,
-                                        featurecap=10,usebinary=1,
-                                        randomorder=TRUE,method="stratified",
-                                        criteria="BIC",gain=TRUE,
-                                        runparallel=FALSE,verbose=TRUE)
+cumu_CV_results <- do_cumulative_htrx(HTRX::example_data_nosnp[1:500,1:3],
+                                      HTRX::example_hap1[1:500,],
+                                      HTRX::example_hap2[1:500,],
+                                      train_proportion=0.5,sim_times=1,
+                                      featurecap=10,usebinary=1,
+                                      randomorder=TRUE,method="stratified",
+                                      criteria="BIC",gain=TRUE,
+                                      runparallel=FALSE,verbose=TRUE)
 }
 #This result would be more precise when setting larger sim_times and featurecap
 }

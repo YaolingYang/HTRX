@@ -174,14 +174,14 @@
 #' ## If you want to compute total variance explained, please set gain=FALSE
 #' ## For Linux/MAC users, we recommend setting runparallel=TRUE
 #' \donttest{
-#' cumu_htrx_results <- do_cumulative_htrx(HTRX::example_data_nosnp[1:500,1:3],
-#'                                         HTRX::example_hap1[1:500,],
-#'                                         HTRX::example_hap2[1:500,],
-#'                                         train_proportion=0.5,sim_times=1,
-#'                                         featurecap=10,usebinary=1,
-#'                                         randomorder=TRUE,method="stratified",
-#'                                         criteria="BIC",gain=TRUE,
-#'                                         runparallel=FALSE,verbose=TRUE)
+#' cumu_CV_results <- do_cumulative_htrx(HTRX::example_data_nosnp[1:500,1:3],
+#'                                       HTRX::example_hap1[1:500,],
+#'                                       HTRX::example_hap2[1:500,],
+#'                                       train_proportion=0.5,sim_times=1,
+#'                                       featurecap=10,usebinary=1,
+#'                                       randomorder=TRUE,method="stratified",
+#'                                       criteria="BIC",gain=TRUE,
+#'                                       runparallel=FALSE,verbose=TRUE)
 #' }
 #' #This result would be more precise when setting larger sim_times and featurecap
 NULL
@@ -280,7 +280,7 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
       if(verbose) cat('Begin validation \n')
       R2_valid_gain=parallel::mclapply(1:fold,function(s){
         featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
-                              fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
+                              fixedfeature=gsub('`','',as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))])))
         infer_fixedfeatures(data_nosnp,featuredata,
                             train=(1:n_total)[-c(split[[s]],split[[test_index(s)]])],
                             test=split[[s]],
@@ -290,7 +290,7 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
       if(verbose) cat('Begin test \n')
       R2_test_gain=parallel::mclapply(1:fold,function(s){
         featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
-                              fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
+                              fixedfeature=gsub('`','',as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))])))
         infer_fixedfeatures(data_nosnp,featuredata,
                             train=(1:n_total)[-c(split[[s]],split[[test_index(s)]])],
                             test=split[[test_index(s)]],
@@ -301,7 +301,7 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
       if(verbose) cat('Begin validation \n')
       R2_valid_gain=lapply(1:fold,function(s){
         featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
-                              fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
+                              fixedfeature=gsub('`','',as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))])))
         infer_fixedfeatures(data_nosnp,featuredata,
                             train=(1:n_total)[-c(split[[s]],split[[test_index(s)]])],
                             test=split[[s]],
@@ -311,7 +311,7 @@ do_cumulative_htrx <- function(data_nosnp,hap1,hap2=hap1,train_proportion=0.5,
       if(verbose) cat('Begin test \n')
       R2_test_gain=lapply(1:fold,function(s){
         featuredata=make_htrx(hap1,hap2,rareremove=rareremove,rare_threshold=rare_threshold,
-                              fixedfeature=as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))]))
+                              fixedfeature=gsub('`','',as.character(candidate_pool[i,which(!is.na(candidate_pool[i,]))])))
         infer_fixedfeatures(data_nosnp,featuredata,
                             train=(1:n_total)[-c(split[[s]],split[[test_index(s)]])],
                             test=split[[test_index(s)]],
