@@ -18,6 +18,7 @@ do_cv(
   criteria = "BIC",
   gain = TRUE,
   nmodel = 3,
+  dataseed = 1:sim_times,
   runparallel = FALSE,
   mc.cores = 6,
   fold = 10,
@@ -99,6 +100,10 @@ otherwise, report the total variance explained by all the variables.}
 
 \item{nmodel}{a positive integer specifying the number of candidate models
 that the criterion selects. By default, \code{nmodel=3}.}
+
+\item{dataseed}{a vector of the seed that each simulation in Step 1 (see details) uses.
+The length of \code{dataseed} must be the same as \code{sim_times}.
+By default, \code{dataseed=1:sim_times}.}
 
 \item{runparallel}{logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
 Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).}

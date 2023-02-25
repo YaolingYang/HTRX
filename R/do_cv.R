@@ -25,6 +25,9 @@
 #' otherwise, report the total variance explained by all the variables.
 #' @param nmodel a positive integer specifying the number of candidate models
 #' that the criterion selects. By default, \code{nmodel=3}.
+#' @param dataseed a vector of the seed that each simulation in Step 1 (see details) uses.
+#' The length of \code{dataseed} must be the same as \code{sim_times}.
+#' By default, \code{dataseed=1:sim_times}.
 #' @param runparallel logical. Use parallel programming based on \code{mclapply} function from R package \code{"parallel"} or not.
 #' Note that for Windows users, \code{mclapply} doesn't work, so please set \code{runparallel=FALSE} (default).
 #' @param mc.cores an integer giving the number of cores used for parallel programming.
@@ -158,14 +161,14 @@ NULL
 #' @export
 do_cv <- function(data_nosnp,featuredata,train_proportion=0.5,
                   sim_times=5,featurecap=dim(featuredata)[2],usebinary=1,
-                  method="simple",criteria="BIC",gain=TRUE,nmodel=3,
+                  method="simple",criteria="BIC",gain=TRUE,nmodel=3,dataseed=1:sim_times,
                   runparallel=FALSE,mc.cores=6,fold=10,kfoldseed=123,
                   returnwork=FALSE,verbose=FALSE){
 
   colnames(data_nosnp)[1]='outcome'
 
   #First step: obtain all the candidate models from running "sim_times" times simulation
-  candidate_models=lapply(1:sim_times,function(s){
+  candidate_models=lapply(dataseed,function(s){
     results=do_cv_step1(data_nosnp,featuredata,train_proportion,
                         featurecap=featurecap,usebinary=usebinary,
                         method=method,criteria=criteria,nmodel=nmodel,splitseed=s,
