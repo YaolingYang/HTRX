@@ -284,7 +284,7 @@ cumu_CV_results <- do_cumulative_htrx(HTRX::example_data_nosnp[1:500,1:3],
 #This result would be more precise when setting larger sim_times and featurecap
 }
 \references{
-Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv (2022): 2022-11.29.518395.
+Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. Bioinformatics Advances 1.1 (2023): vbab038.
 
 Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022): 2022.09.23.509097.
 
