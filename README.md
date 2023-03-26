@@ -12,8 +12,7 @@ Y, Attfield K E, et al. Genetic risk for Multiple Sclerosis originated
 in Pastoralist Steppe populations. bioRxiv
 (2022): 2022.09.23.509097](https://www.biorxiv.org/content/10.1101/2022.09.23.509097v1)   
 and then illustrated in detail by   
-[Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. bioRxiv
-(2022): 2022-11.29.518395](https://www.biorxiv.org/content/10.1101/2022.11.29.518395v1).
+[Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. Bioinformatics Advances 1.1 (2023): vbab038.](https://academic.oup.com/bioinformaticsadvances/advance-article/doi/10.1093/bioadv/vbad038/7084787).
 
 -   Authors:  
     Yaoling Yang (<yaoling.yang@bristol.ac.uk>)  
