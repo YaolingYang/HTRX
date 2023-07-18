@@ -14,7 +14,7 @@ in Pastoralist Steppe populations. bioRxiv
 and then illustrated in detail by   
 [Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. Bioinformatics Advances 3.1 (2023): vbad038](https://academic.oup.com/bioinformaticsadvances/advance-article/doi/10.1093/bioadv/vbad038/7084787).
 
-This package is simultaneously updated on [CRAN](https://cran.r-project.org/web/packages/HTRX/index.html)
+This package is simultaneously updated on [CRAN](https://cran.r-project.org/web/packages/HTRX/index.html).
 
 -   Authors:  
     Yaoling Yang (<yaoling.yang@bristol.ac.uk>)  
