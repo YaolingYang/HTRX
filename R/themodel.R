@@ -1,8 +1,9 @@
 #' @title Model fitting
 #' @name themodel
 #' @description Model-agnostic functions for model fitting (both linear and generalized linear models).
-#' @param formula a formula for model-fitting.
+#' @param formula a formula for model-fitting, starting with outcome~.
 #' @param data a data frame contains all the variables included in the formula.
+#' The outcome must be the first column with colnames(data)[1]="outcome".
 #' @param usebinary a non-negative number representing different models.
 #' Use linear model if \code{usebinary=0},
 #' use logistic regression model via \code{fastglm} if \code{usebinary=1} (by default),

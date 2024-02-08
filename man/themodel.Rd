@@ -7,9 +7,10 @@
 themodel(formula, data, usebinary = 1, clean = TRUE)
 }
 \arguments{
-\item{formula}{a formula for model-fitting.}
+\item{formula}{a formula for model-fitting, starting with outcome~.}
 
-\item{data}{a data frame contains all the variables included in the formula.}
+\item{data}{a data frame contains all the variables included in the formula.
+The outcome must be the first column with colnames(data)[1]="outcome".}
 
 \item{usebinary}{a non-negative number representing different models.
 Use linear model if \code{usebinary=0},

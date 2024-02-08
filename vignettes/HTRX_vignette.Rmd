@@ -1,7 +1,7 @@
 ---
 title: "HTRX: an R package for learning non-contiguous haplotypes"
 author: "Yaoling Yang, Daniel Lawson"
-output: rmarkdown::pdf_document
+output: rmarkdown::html_document
 vignette: >
   %\VignetteIndexEntry{HTRX_vignette}
   %\VignetteEngine{knitr::rmarkdown}
@@ -165,5 +165,5 @@ The output of `do_cumulative_htrx` has the same format as `do_cv`. When comparin
 We have avoided the exponentially increasing computational cost of `do_cv` by implementing `do_cumulative_htrx` at the cost of losing some haplotypes, but it still requires significant amount of time to run if we have large sample sets. Thus, running parallel by setting `run_parallel=TRUE` is suggested. Furthermore, we can increase the values of `sim_times`, `featurecap`, `max_int` and `L` to slightly improve the performance, but the computational cost will be increased simultaneously.
 
 ## References
-Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. Bioinformatics Advances 1.1 (2023): vbab038.
-Barrie, William, et al. "Genetic risk for Multiple Sclerosis originated in Pastoralist Steppe populations." bioRxiv (2022): 2022.09.23.509097.
+Yang Y, Lawson DJ. HTRX: an R package for learning non-contiguous haplotypes associated with a phenotype. Bioinformatics Advances 3.1 (2023): vbad038.
+Barrie, W., Yang, Y., Irving-Pease, E.K. et al. Elevated genetic risk for multiple sclerosis emerged in steppe pastoralist populations. Nature 625, 321–328 (2024).
